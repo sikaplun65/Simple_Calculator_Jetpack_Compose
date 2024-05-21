@@ -96,12 +96,12 @@ class CalculatorMainScreenViewModel : ViewModel() {
         calculate()
         when {
             state.isInBrackets -> {
-                if (state.firstOperandInBrackets.isBlank()) return
+                if (state.firstOperandInBrackets.isBlank() || state.firstOperandInBrackets == "0,") return
                 state = state.copy(operationInBrackets = operation)
             }
 
             !state.isInBrackets -> {
-                if (state.firstOperand.isBlank()) return
+                if (state.firstOperand.isBlank() || state.firstOperand == "0,") return
                 state = state.copy(operation = operation)
             }
         }
