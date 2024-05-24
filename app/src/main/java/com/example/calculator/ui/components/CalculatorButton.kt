@@ -9,7 +9,6 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -48,7 +47,33 @@ fun CalculatorButton(
             }
             .then(modifier),
         contentAlignment = Alignment.Center
-    ){
+    ) {
+        Text(
+            text = symbol,
+            color = Color.White,
+            fontSize = 28.sp
+        )
+    }
+}
+
+@RequiresApi(Build.VERSION_CODES.Q)
+@Composable
+fun CleanButton(
+    symbol: String,
+    modifier: Modifier,
+) {
+    val view = LocalView.current
+    val context = LocalContext.current
+    Box(
+        modifier = Modifier
+            .clip(CircleShape)
+            .clickable {
+                view.playSoundEffect(SoundEffectConstants.CLICK)
+                HapticFeedback().triggerHapticFeedback(context)
+            }
+            .then(modifier),
+        contentAlignment = Alignment.Center
+    ) {
         Text(
             text = symbol,
             color = Color.White,
@@ -77,7 +102,7 @@ fun CalculatorLandscapeButton(
         }
         .then(modifier),
         contentAlignment = Alignment.Center
-    ){
+    ) {
         Text(
             text = symbol,
             color = Color.White,
@@ -102,7 +127,7 @@ fun CalcButton() {
             .aspectRatio(1f)
             .then(operationButtonModifier1),
         contentAlignment = Alignment.Center
-    ){
+    ) {
         Text(
             text = "7",
             color = Color.White,

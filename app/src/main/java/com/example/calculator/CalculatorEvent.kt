@@ -6,6 +6,7 @@ sealed class CalculatorEvent {
     object Brackets: CalculatorEvent()
     object Calculate: CalculatorEvent()
     object Clear: CalculatorEvent()
+    object FullClear: CalculatorEvent()
     object Delete: CalculatorEvent()
     object Decimal: CalculatorEvent()
     object NumberInversion: CalculatorEvent()

@@ -74,21 +74,3 @@ private fun addSpaces(number: String): String {
     }
     return outputNumber
 }
-
-//@Composable
-//fun calculateFontSize(text: String): TextUnit {
-//
-//    val screenWidth = LocalConfiguration.current.screenWidthDp.sp
-//    var fontSize = screenWidth / 4
-//    var textSize = fontSize * text.length
-//
-//    while (textSize > screenWidth * 1.5) {
-//        fontSize *= 0.999
-//        textSize = fontSize * text.length
-//    }
-//
-//    return fontSize
-//}
-//
-//val Int.dpTextUnit: TextUnit
-//    @Composable get() = with(LocalDensity.current) { this@dpTextUnit.dp.toSp() }

@@ -3,6 +3,7 @@ package com.example.calculator.ui.screens
 import android.os.Build
 import androidx.annotation.RequiresApi
 import androidx.compose.foundation.background
+import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -14,11 +15,13 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.unit.dp
 import com.example.calculator.CalculatorEvent
 import com.example.calculator.CalculatorOperation
 import com.example.calculator.CalculatorState
 import com.example.calculator.ui.components.CalculatorButton
+import com.example.calculator.ui.components.CleanButton
 import com.example.calculator.ui.theme.Orange
 import com.example.calculator.ui.theme.darkOrange
 import com.example.calculator.util.ButtonModifiers.equalsButtonModifier
@@ -43,13 +46,13 @@ fun CalculatorPortraitScreen(
         ) {
             val expression =
                 if (state.isInBrackets) state.firstOperand + (state.operation?.operation ?: "") +
-                        "(" + state.firstOperandInBrackets + (state.operationInBrackets?.operation ?: "") +
-                        state.secondOperandInBrackets + ")"
+                        "(" + state.firstOperandInBrackets + (state.operationInBrackets?.operation
+                    ?: "") + state.secondOperandInBrackets + ")"
                 else state.firstOperand + (state.operation?.operation ?: "") + state.secondOperand
 
             ShowAndAutoSizeDigitsInExpression(
                 text = getExpressionWithSpaces(expression, isErrorCalculate),
-                onEvent = onEvent,
+                onEvent = onEvent
             )
 
             Row(
@@ -58,13 +61,16 @@ fun CalculatorPortraitScreen(
                     .padding(start = 5.dp, end = 5.dp),
                 horizontalArrangement = Arrangement.spacedBy(8.dp)
             ) {
-                CalculatorButton(
+                CleanButton(
                     symbol = "AC",
                     modifier = equalsButtonModifier
-                        .weight(1f),
-                    onClick = {
-                        onEvent(CalculatorEvent.Clear)
-                    }
+                        .weight(1f)
+                        .pointerInput(Unit) {
+                            detectTapGestures(
+                                onTap = {onEvent(CalculatorEvent.Clear)},
+                                onLongPress = {onEvent(CalculatorEvent.FullClear)}
+                            )
+                        },
                 )
 
 
@@ -242,7 +248,14 @@ fun CalculatorPortraitScreen(
                     symbol = "±",
                     modifier = numberButtonModifier
                         .weight(weight = 1f)
-                        .background(Brush.verticalGradient(colors = listOf(Color.Gray, Color.DarkGray))),
+                        .background(
+                            Brush.verticalGradient(
+                                colors = listOf(
+                                    Color.Gray,
+                                    Color.DarkGray
+                                )
+                            )
+                        ),
                     onClick = {
                         onEvent(CalculatorEvent.NumberInversion)
                     }

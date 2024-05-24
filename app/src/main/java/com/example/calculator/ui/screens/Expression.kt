@@ -128,7 +128,7 @@ fun ShowAndAutoSizeDigitsInExpression(
     lineSpacingRatio: Float = style.lineHeight.value / style.fontSize.value,
     onEvent: (CalculatorEvent) -> Unit,
 ) {
-    AutoSizeText(
+    ShowAndAutoSizeDigitsInExpression(
         text = AnnotatedString(text),
         modifier = modifier,
         color = color,
@@ -162,12 +162,12 @@ fun ShowAndAutoSizeDigitsInExpression(
  *
  * @param inlineContent a map storing composables that replaces certain ranges of the text, used to
  * insert composables into text layout. See [InlineTextContent].
- * @see AutoSizeText
+ * @see ShowAndAutoSizeDigitsInExpression
  */
 
 @RequiresApi(Build.VERSION_CODES.Q)
 @Composable
-fun AutoSizeText(
+fun ShowAndAutoSizeDigitsInExpression(
     text: AnnotatedString,
     modifier: Modifier = Modifier,
     color: Color = Color.Unspecified,

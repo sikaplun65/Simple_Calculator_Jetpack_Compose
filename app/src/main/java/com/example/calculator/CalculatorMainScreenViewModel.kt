@@ -22,6 +22,7 @@ class CalculatorMainScreenViewModel : ViewModel() {
             is CalculatorEvent.Operation -> enterOperation(event.operation)
             CalculatorEvent.Calculate -> calculate()
             CalculatorEvent.Clear -> clearScreen()
+            CalculatorEvent.FullClear -> fullClearScreen()
             CalculatorEvent.Decimal -> enterDecimal()
             CalculatorEvent.Delete -> performDeletion()
             CalculatorEvent.NumberInversion -> inversionPositiveDigitToNegativeDigitAndViceVersa()
@@ -386,6 +387,12 @@ class CalculatorMainScreenViewModel : ViewModel() {
                 if (isErrorCalculate) state.copy(secondOperand = "") else CalculatorState()
             }
         }
+        isChangeDigit = true
+        isErrorCalculate = false
+    }
+
+    private fun fullClearScreen(){
+        state = CalculatorState()
         isChangeDigit = true
         isErrorCalculate = false
     }
