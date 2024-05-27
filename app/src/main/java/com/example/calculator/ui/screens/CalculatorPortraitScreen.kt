@@ -50,7 +50,7 @@ fun CalculatorPortraitScreen(
                     ?: "") + state.secondOperandInBrackets + ")"
                 else state.firstOperand + (state.operation?.operation ?: "") + state.secondOperand
 
-            ShowAndAutoSizeDigitsInExpression(
+            AutoSizeText(
                 text = getExpressionWithSpaces(expression, isErrorCalculate),
                 onEvent = onEvent
             )
@@ -67,8 +67,8 @@ fun CalculatorPortraitScreen(
                         .weight(1f)
                         .pointerInput(Unit) {
                             detectTapGestures(
-                                onTap = {onEvent(CalculatorEvent.Clear)},
-                                onLongPress = {onEvent(CalculatorEvent.FullClear)}
+                                onTap = { onEvent(CalculatorEvent.Clear) },
+                                onLongPress = { onEvent(CalculatorEvent.FullClear) }
                             )
                         },
                 )

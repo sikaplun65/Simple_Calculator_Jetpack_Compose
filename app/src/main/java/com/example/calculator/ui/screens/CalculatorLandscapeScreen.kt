@@ -55,7 +55,7 @@ fun CalculatorLandscapeScreen(
                     .weight(1.5f),
                 horizontalArrangement = Arrangement.spacedBy(8.dp)
             ){
-                ShowAndAutoSizeDigitsInExpression(
+                AutoSizeText(
                     text = getExpressionWithSpaces(expression, isErrorCalculate),
                     onEvent = onEvent,
                 )

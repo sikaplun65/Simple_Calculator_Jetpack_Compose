@@ -46,7 +46,6 @@ class CalculatorMainScreenViewModel : ViewModel() {
         var firstOperand by Delegates.notNull<Double>()
         var secondOperand by Delegates.notNull<Double>()
         var operation by Delegates.notNull<CalculatorOperation>()
-        var result by Delegates.notNull<BigDecimal>()
 
         if (state.isInBrackets) {
             if (state.firstOperandInBrackets.isEmpty() || state.secondOperandInBrackets.isEmpty()) return
@@ -65,7 +64,7 @@ class CalculatorMainScreenViewModel : ViewModel() {
             return
         }
 
-        result = performCalculate(operation, firstOperand, secondOperand)
+        val result = performCalculate(operation, firstOperand, secondOperand)
 
 
         state = if (state.isInBrackets) state.copy(
@@ -86,10 +85,10 @@ class CalculatorMainScreenViewModel : ViewModel() {
         firstOperand: Double,
         secondOperand: Double
     ): BigDecimal = when (operation) {
-        CalculatorOperation.Addition -> BigDecimal.valueOf(firstOperand + secondOperand)
-        CalculatorOperation.Divide -> BigDecimal.valueOf(firstOperand / secondOperand)
-        CalculatorOperation.Multiply -> BigDecimal.valueOf(firstOperand * secondOperand)
-        CalculatorOperation.Subtract -> BigDecimal.valueOf(firstOperand - secondOperand)
+        CalculatorOperation.Addition -> BigDecimal.valueOf(firstOperand).plus(BigDecimal.valueOf(secondOperand))
+        CalculatorOperation.Divide -> BigDecimal.valueOf(firstOperand ).div(BigDecimal.valueOf(secondOperand))
+        CalculatorOperation.Multiply -> BigDecimal.valueOf(firstOperand ).times(BigDecimal.valueOf(secondOperand))
+        CalculatorOperation.Subtract -> BigDecimal.valueOf(firstOperand ).minus(BigDecimal.valueOf(secondOperand))
     }
 
     private fun enterOperation(operation: CalculatorOperation) {
@@ -97,12 +96,12 @@ class CalculatorMainScreenViewModel : ViewModel() {
         calculate()
         when {
             state.isInBrackets -> {
-                if (state.firstOperandInBrackets.isBlank() || state.firstOperandInBrackets == "0,") return
+                if (state.firstOperandInBrackets.isEmpty() || state.firstOperandInBrackets == "0,") return
                 state = state.copy(operationInBrackets = operation)
             }
 
             !state.isInBrackets -> {
-                if (state.firstOperand.isBlank() || state.firstOperand == "0,") return
+                if (state.firstOperand.isEmpty() || state.firstOperand == "0,") return
                 state = state.copy(operation = operation)
             }
         }
@@ -182,7 +181,7 @@ class CalculatorMainScreenViewModel : ViewModel() {
 
         if (state.isInBrackets) {
             when {
-                state.secondOperandInBrackets.isNotBlank() -> {
+                state.secondOperandInBrackets.isNotEmpty() -> {
                     state = state.copy(
                         secondOperandInBrackets = state.secondOperandInBrackets.dropLast(1)
                     )
@@ -196,7 +195,7 @@ class CalculatorMainScreenViewModel : ViewModel() {
                 state.operationInBrackets != null -> state =
                     state.copy(operationInBrackets = null)
 
-                state.firstOperandInBrackets.isNotBlank() -> {
+                state.firstOperandInBrackets.isNotEmpty() -> {
                     state =
                         state.copy(firstOperandInBrackets = state.firstOperandInBrackets.dropLast(1))
                     if (state.firstOperandInBrackets == "-" || state.firstOperandInBrackets == "0") {
@@ -212,7 +211,7 @@ class CalculatorMainScreenViewModel : ViewModel() {
             }
         } else {
             when {
-                state.secondOperand.isNotBlank() -> {
+                state.secondOperand.isNotEmpty() -> {
                     state = state.copy(secondOperand = state.secondOperand.dropLast(1))
                     if (state.secondOperand == "-" || state.secondOperand == "0") {
                         state = state.copy(secondOperand = state.secondOperand.dropLast(1))
@@ -221,7 +220,7 @@ class CalculatorMainScreenViewModel : ViewModel() {
 
                 state.operation != null -> state = state.copy(operation = null)
 
-                state.firstOperand.isNotBlank() -> {
+                state.firstOperand.isNotEmpty() -> {
                     state = state.copy(firstOperand = state.firstOperand.dropLast(1))
                     if (state.firstOperand == "-" || state.firstOperand == "0") {
                         state = state.copy(firstOperand = state.firstOperand.dropLast(1))

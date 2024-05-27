@@ -103,8 +103,9 @@ import kotlin.math.min
  * @author Reda El Madini - For support, contact gladiatorkilo@gmail.com
  */
 @RequiresApi(Build.VERSION_CODES.Q)
+
 @Composable
-fun ShowAndAutoSizeDigitsInExpression(
+fun AutoSizeText(
     text: String,
     modifier: Modifier = Modifier,
     color: Color = Color.White,
@@ -128,7 +129,7 @@ fun ShowAndAutoSizeDigitsInExpression(
     lineSpacingRatio: Float = style.lineHeight.value / style.fontSize.value,
     onEvent: (CalculatorEvent) -> Unit,
 ) {
-    ShowAndAutoSizeDigitsInExpression(
+    AutoSizeText(
         text = AnnotatedString(text),
         modifier = modifier,
         color = color,
@@ -162,12 +163,12 @@ fun ShowAndAutoSizeDigitsInExpression(
  *
  * @param inlineContent a map storing composables that replaces certain ranges of the text, used to
  * insert composables into text layout. See [InlineTextContent].
- * @see ShowAndAutoSizeDigitsInExpression
+ * @see AutoSizeText
  */
 
 @RequiresApi(Build.VERSION_CODES.Q)
 @Composable
-fun ShowAndAutoSizeDigitsInExpression(
+fun AutoSizeText(
     text: AnnotatedString,
     modifier: Modifier = Modifier,
     color: Color = Color.Unspecified,

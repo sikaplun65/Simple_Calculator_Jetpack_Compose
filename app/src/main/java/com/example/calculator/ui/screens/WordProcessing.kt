@@ -1,5 +1,4 @@
 package com.example.calculator.ui.screens
-
 fun getExpressionWithSpaces(inputStr: String, isErrorCalculate: Boolean): String {
 
     val blocks = mutableListOf<String>()
@@ -14,10 +13,10 @@ fun getExpressionWithSpaces(inputStr: String, isErrorCalculate: Boolean): String
             expression = expression.substring(1, expression.length)
         }
 
-        if (expression[0] == '('){
+        if (expression[0] == '(') {
             blocks.add(expression[0].toString())
             lastBracket = expression[expression.length - 1].toString()
-            expression = expression.substring(1,expression.length - 1)
+            expression = expression.substring(1, expression.length - 1)
         }
 
         val operatorInd =
@@ -36,7 +35,7 @@ fun getExpressionWithSpaces(inputStr: String, isErrorCalculate: Boolean): String
             expression = ""
         }
     }
-    if (lastBracket.isNotEmpty()){
+    if (lastBracket.isNotEmpty()) {
         blocks.add(lastBracket)
     }
     return if (isErrorCalculate) errorMessage else blocks.joinToString("")
