@@ -85,10 +85,15 @@ class CalculatorMainScreenViewModel : ViewModel() {
         firstOperand: Double,
         secondOperand: Double
     ): BigDecimal = when (operation) {
-        CalculatorOperation.Addition -> BigDecimal.valueOf(firstOperand).plus(BigDecimal.valueOf(secondOperand))
-        CalculatorOperation.Divide -> BigDecimal.valueOf(firstOperand ).div(BigDecimal.valueOf(secondOperand))
-        CalculatorOperation.Multiply -> BigDecimal.valueOf(firstOperand ).times(BigDecimal.valueOf(secondOperand))
-        CalculatorOperation.Subtract -> BigDecimal.valueOf(firstOperand ).minus(BigDecimal.valueOf(secondOperand))
+        CalculatorOperation.Addition -> BigDecimal.valueOf(firstOperand)
+            .plus(BigDecimal.valueOf(secondOperand))
+
+        CalculatorOperation.Divide -> BigDecimal.valueOf(firstOperand).div(BigDecimal.valueOf(secondOperand))
+        CalculatorOperation.Multiply -> BigDecimal.valueOf(firstOperand)
+            .times(BigDecimal.valueOf(secondOperand))
+
+        CalculatorOperation.Subtract -> BigDecimal.valueOf(firstOperand)
+            .minus(BigDecimal.valueOf(secondOperand))
     }
 
     private fun enterOperation(operation: CalculatorOperation) {
@@ -115,13 +120,19 @@ class CalculatorMainScreenViewModel : ViewModel() {
             state.isInBrackets -> {
                 when {
                     state.operationInBrackets == null && state.firstOperandInBrackets.length < MAX_LENGTH_DIGIT -> {
-                        state =
-                            state.copy(firstOperandInBrackets = state.firstOperandInBrackets + digit)
+                        state = if (state.firstOperandInBrackets == "0") state.copy(
+                            firstOperandInBrackets = digit.toString()
+                        ) else state.copy(
+                            firstOperandInBrackets = state.firstOperandInBrackets + digit
+                        )
                     }
 
                     state.operationInBrackets != null && state.secondOperandInBrackets.length < MAX_LENGTH_DIGIT -> {
-                        state =
-                            state.copy(secondOperandInBrackets = state.secondOperandInBrackets + digit)
+                        state = if (state.secondOperandInBrackets == "0") state.copy(
+                            secondOperandInBrackets = digit.toString()
+                        ) else state.copy(
+                            secondOperandInBrackets = state.secondOperandInBrackets + digit
+                        )
                     }
                 }
             }
@@ -129,13 +140,19 @@ class CalculatorMainScreenViewModel : ViewModel() {
             !state.isInBrackets -> {
                 when {
                     state.operation == null && state.firstOperand.length < MAX_LENGTH_DIGIT -> {
-                        state = state.copy(
+                        state = if (state.firstOperand == "0") state.copy(
+                            firstOperand = digit.toString()
+                        ) else state.copy(
                             firstOperand = state.firstOperand + digit
                         )
                     }
 
                     state.operation != null && state.secondOperand.length < MAX_LENGTH_DIGIT -> {
-                        state = state.copy(secondOperand = state.secondOperand + digit)
+                        state = if (state.secondOperand == "0") state.copy(
+                            secondOperand = digit.toString()
+                        ) else state.copy(
+                            secondOperand = state.secondOperand + digit
+                        )
                     }
                 }
             }
@@ -390,7 +407,7 @@ class CalculatorMainScreenViewModel : ViewModel() {
         isErrorCalculate = false
     }
 
-    private fun fullClearScreen(){
+    private fun fullClearScreen() {
         state = CalculatorState()
         isChangeDigit = true
         isErrorCalculate = false

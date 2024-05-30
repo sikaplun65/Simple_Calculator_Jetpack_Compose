@@ -108,7 +108,7 @@ import kotlin.math.min
 fun AutoSizeText(
     text: String,
     modifier: Modifier = Modifier,
-    color: Color = Color.White,
+    color: Color = if (text.contains('r')) Color.Red else Color.White,
     suggestedFontSizes: ImmutableWrapper<List<TextUnit>> = emptyList<TextUnit>().toImmutableWrapper(),
     suggestedFontSizesStatus: SuggestedFontSizesStatus = suggestedFontSizes.rememberSuggestedFontSizesStatus,
     stepGranularityTextSize: TextUnit = TextUnit.Unspecified,
