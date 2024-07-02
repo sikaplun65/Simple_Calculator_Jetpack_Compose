@@ -40,9 +40,9 @@ class CalculatorMainScreenViewModel : ViewModel() {
             secondOperand = state.firstOperandInBrackets.ifEmpty { "" },
             firstOperandInBrackets = ""
         )
-        if (state.secondOperand.isNotEmpty()){
+        if (state.secondOperand.isNotEmpty()) {
             val number = getNumberFromString(state.secondOperand)
-            if (number < 0){
+            if (number < 0) {
                 state = state.copy(isSecondOperandNegative = true)
             }
         }
@@ -83,10 +83,14 @@ class CalculatorMainScreenViewModel : ViewModel() {
             secondOperand = ""
         )
 
-        if (state.secondOperand.isEmpty()){
+        if (state.secondOperand.isEmpty()) {
             state = state.copy(isSecondOperandNegative = false)
         }
-        if (state.secondOperandInBrackets.isEmpty()){
+        if (state.firstOperandInBrackets.isNotEmpty()) {
+            val number = getNumberFromString(state.firstOperandInBrackets)
+            if (number > 0) state = state.copy(isFirstOperandInBracketsNegative = false)
+        }
+        if (state.secondOperandInBrackets.isEmpty()) {
             state = state.copy(isSecondOperandInBracketsNegative = false)
         }
 
@@ -98,10 +102,15 @@ class CalculatorMainScreenViewModel : ViewModel() {
         firstOperand: Double,
         secondOperand: Double
     ): BigDecimal = when (operation) {
-        CalculatorOperation.Addition -> BigDecimal.valueOf(firstOperand).plus(BigDecimal.valueOf(secondOperand))
-        CalculatorOperation.Divide -> BigDecimal.valueOf(firstOperand/secondOperand)//.div(BigDecimal.valueOf(secondOperand))
-        CalculatorOperation.Multiply -> BigDecimal.valueOf(firstOperand).times(BigDecimal.valueOf(secondOperand))
-        CalculatorOperation.Subtract -> BigDecimal.valueOf(firstOperand).minus(BigDecimal.valueOf(secondOperand))
+        CalculatorOperation.Addition -> BigDecimal.valueOf(firstOperand)
+            .plus(BigDecimal.valueOf(secondOperand))
+
+        CalculatorOperation.Divide -> BigDecimal.valueOf(firstOperand / secondOperand)//.div(BigDecimal.valueOf(secondOperand))
+        CalculatorOperation.Multiply -> BigDecimal.valueOf(firstOperand)
+            .times(BigDecimal.valueOf(secondOperand))
+
+        CalculatorOperation.Subtract -> BigDecimal.valueOf(firstOperand)
+            .minus(BigDecimal.valueOf(secondOperand))
     }
 
     private fun enterOperation(operation: CalculatorOperation) {
@@ -388,7 +397,13 @@ class CalculatorMainScreenViewModel : ViewModel() {
                     state.operation == null && state.firstOperand.isNotEmpty() && state.firstOperand != "0," -> {
                         val number = -getNumberFromString(state.firstOperand)
                         state =
-                            state.copy(firstOperand = convertNumberToString(BigDecimal.valueOf(number)))
+                            state.copy(
+                                firstOperand = convertNumberToString(
+                                    BigDecimal.valueOf(
+                                        number
+                                    )
+                                )
+                            )
                     }
 
                     state.operation != null && state.secondOperand.isNotEmpty() && state.secondOperand != "0," -> {
@@ -429,8 +444,6 @@ class CalculatorMainScreenViewModel : ViewModel() {
         isChangeDigit = true
         isErrorCalculate = false
     }
-
-
 
     private fun fullClearScreen() {
         state = CalculatorState()
