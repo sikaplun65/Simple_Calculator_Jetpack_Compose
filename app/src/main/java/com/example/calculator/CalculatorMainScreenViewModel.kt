@@ -416,7 +416,9 @@ class CalculatorMainScreenViewModel : ViewModel() {
                 else state.copy(
                     firstOperandInBrackets = "",
                     secondOperandInBrackets = "",
-                    operationInBrackets = null
+                    operationInBrackets = null,
+                    isFirstOperandInBracketsNegative = false,
+                    isSecondOperandInBracketsNegative = false,
                 )
             }
 
