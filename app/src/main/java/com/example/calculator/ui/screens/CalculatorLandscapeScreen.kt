@@ -3,6 +3,7 @@ package com.example.calculator.ui.screens
 import android.os.Build
 import androidx.annotation.RequiresApi
 import androidx.compose.foundation.background
+import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -16,10 +17,13 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.unit.dp
 import com.example.calculator.CalculatorEvent
 import com.example.calculator.CalculatorOperation
 import com.example.calculator.CalculatorState
+import com.example.calculator.getExpressionWithSpaces
+import com.example.calculator.getExpression
 import com.example.calculator.ui.components.CalculatorLandscapeButton
 import com.example.calculator.ui.theme.Orange
 import com.example.calculator.ui.theme.darkOrange
@@ -42,12 +46,6 @@ fun CalculatorLandscapeScreen(
                 .align(Alignment.BottomCenter),
             verticalArrangement = Arrangement.spacedBy(8.dp)
         ) {
-            val expression =
-                if (state.isInBrackets) state.firstOperand + (state.operation?.operation ?: "") +
-                        "(" + state.firstOperandInBrackets + (state.operationInBrackets?.operation ?: "") +
-                        state.secondOperandInBrackets + ")"
-                else state.firstOperand + (state.operation?.operation ?: "") + state.secondOperand
-
             Row (
                 modifier = Modifier
                     .fillMaxWidth()
@@ -56,7 +54,7 @@ fun CalculatorLandscapeScreen(
                 horizontalArrangement = Arrangement.spacedBy(8.dp)
             ){
                 AutoSizeText(
-                    text = getExpressionWithSpaces(expression, isErrorCalculate),
+                    text = getExpressionWithSpaces(state, isErrorCalculate),
                     onEvent = onEvent,
                 )
             }
@@ -109,10 +107,14 @@ fun CalculatorLandscapeScreen(
                 CalculatorLandscapeButton(
                     symbol = "AC",
                     modifier = ButtonModifiers.equalsButtonModifier
-                        .weight(1f),
-                    onClick = {
-                        onEvent(CalculatorEvent.Clear)
-                    }
+                        .weight(1f)
+                        .pointerInput(Unit) {
+                            detectTapGestures(
+                                onTap = { onEvent(CalculatorEvent.Clear) },
+                                onLongPress = { onEvent(CalculatorEvent.FullClear) }
+                            )
+                        },
+                    onClick = {}
                 )
             }
 

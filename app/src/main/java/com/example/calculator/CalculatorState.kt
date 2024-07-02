@@ -8,4 +8,7 @@ data class CalculatorState(
     val operation: CalculatorOperation? = null,
     val operationInBrackets: CalculatorOperation? = null,
     val isInBrackets: Boolean = false,
+    val isSecondOperandNegative: Boolean = false,
+    val isFirstOperandInBracketsNegative: Boolean = false,
+    val isSecondOperandInBracketsNegative: Boolean = false,
 )

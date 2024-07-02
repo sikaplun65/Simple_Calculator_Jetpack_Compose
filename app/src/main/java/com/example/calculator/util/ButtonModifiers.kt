@@ -11,8 +11,12 @@ import androidx.compose.ui.graphics.Color.Companion.Blue
 import androidx.compose.ui.graphics.Color.Companion.DarkGray
 import androidx.compose.ui.graphics.Color.Companion.LightGray
 import androidx.compose.ui.unit.dp
+import com.example.calculator.ui.theme.DarkGreen
+import com.example.calculator.ui.theme.DarkRed
+import com.example.calculator.ui.theme.Green
 import com.example.calculator.ui.theme.LightBlue
 import com.example.calculator.ui.theme.LightOrange
+import com.example.calculator.ui.theme.LightRed
 import com.example.calculator.ui.theme.Orange
 
 object ButtonModifiers {
@@ -21,7 +25,8 @@ object ButtonModifiers {
         .aspectRatio(ratio = 1F)
 
     val operationButtonModifier = Modifier
-        .background(Brush.verticalGradient(colors = listOf(LightOrange, Orange)))
+        .background(Brush.verticalGradient(colors = listOf(Green, DarkGreen)))
+//        .background(Brush.verticalGradient(colors = listOf(LightOrange, Orange)))
         .aspectRatio(ratio = 1F)
 
     val calculationButtonModifier = Modifier
@@ -30,5 +35,12 @@ object ButtonModifiers {
 
     val equalsButtonModifier = Modifier
         .background(Brush.verticalGradient(colors = listOf(LightBlue, Blue)))
+        .aspectRatio(ratio = 1f)
+
+    val mathButtonModifier = Modifier
+        .background(Brush.verticalGradient(colors = listOf(Green, DarkGreen)))
+
+    val cleanButtonModifier = Modifier
+        .background(Brush.verticalGradient(colors = listOf(LightRed, DarkRed)))
         .aspectRatio(ratio = 1f)
 }

@@ -20,10 +20,11 @@ import androidx.compose.ui.unit.dp
 import com.example.calculator.CalculatorEvent
 import com.example.calculator.CalculatorOperation
 import com.example.calculator.CalculatorState
+import com.example.calculator.getExpressionWithSpaces
 import com.example.calculator.ui.components.CalculatorButton
-import com.example.calculator.ui.components.CleanButton
-import com.example.calculator.ui.theme.Orange
+import com.example.calculator.ui.theme.LightOrange
 import com.example.calculator.ui.theme.darkOrange
+import com.example.calculator.util.ButtonModifiers.cleanButtonModifier
 import com.example.calculator.util.ButtonModifiers.equalsButtonModifier
 import com.example.calculator.util.ButtonModifiers.numberButtonModifier
 import com.example.calculator.util.ButtonModifiers.operationButtonModifier
@@ -36,7 +37,6 @@ fun CalculatorPortraitScreen(
     onEvent: (CalculatorEvent) -> Unit,
     isErrorCalculate: Boolean
 ) {
-
     Box(modifier = modifier) {
         Column(
             modifier = Modifier
@@ -44,26 +44,31 @@ fun CalculatorPortraitScreen(
                 .align(Alignment.BottomCenter),
             verticalArrangement = Arrangement.spacedBy(8.dp)
         ) {
-            val expression =
-                if (state.isInBrackets) state.firstOperand + (state.operation?.operation ?: "") +
-                        "(" + state.firstOperandInBrackets + (state.operationInBrackets?.operation
-                    ?: "") + state.secondOperandInBrackets + ")"
-                else state.firstOperand + (state.operation?.operation ?: "") + state.secondOperand
 
-            AutoSizeText(
-                text = getExpressionWithSpaces(expression, isErrorCalculate),
-                onEvent = onEvent
-            )
 
             Row(
                 modifier = Modifier
+                    .weight(2.5f)
                     .fillMaxWidth()
                     .padding(start = 5.dp, end = 5.dp),
+                verticalAlignment = Alignment.Bottom,
+            ) {
+                AutoSizeText(
+                    text = getExpressionWithSpaces(state, isErrorCalculate),
+                    onEvent = onEvent
+                )
+            }
+
+            Row(
+                modifier = Modifier
+                    .weight(1f)
+                    .fillMaxWidth()
+                    .padding(start = 5.dp, end = 5.dp, bottom = 2.dp),
                 horizontalArrangement = Arrangement.spacedBy(8.dp)
             ) {
-                CleanButton(
+                CalculatorButton(
                     symbol = "AC",
-                    modifier = equalsButtonModifier
+                    modifier = cleanButtonModifier
                         .weight(1f)
                         .pointerInput(Unit) {
                             detectTapGestures(
@@ -71,13 +76,14 @@ fun CalculatorPortraitScreen(
                                 onLongPress = { onEvent(CalculatorEvent.FullClear) }
                             )
                         },
+                    onClick = {}
                 )
 
 
                 CalculatorButton(
                     symbol = "( )",
                     modifier = equalsButtonModifier
-                        .weight(weight = 1f),
+                        .weight(1f),
                     onClick = {
                         onEvent(CalculatorEvent.Brackets)
                     }
@@ -95,7 +101,7 @@ fun CalculatorPortraitScreen(
                 CalculatorButton(
                     symbol = "÷",
                     modifier = operationButtonModifier
-                        .weight(weight = 1f),
+                        .weight(1f),
                     onClick = {
                         onEvent(CalculatorEvent.Operation(CalculatorOperation.Divide))
                     }
@@ -104,8 +110,9 @@ fun CalculatorPortraitScreen(
 
             Row(
                 modifier = Modifier
+                    .weight(1f)
                     .fillMaxWidth()
-                    .padding(start = 5.dp, end = 5.dp),
+                    .padding(start = 5.dp, end = 5.dp, bottom = 2.dp),
                 horizontalArrangement = Arrangement.spacedBy(8.dp)
             ) {
                 CalculatorButton(
@@ -144,8 +151,9 @@ fun CalculatorPortraitScreen(
 
             Row(
                 modifier = Modifier
+                    .weight(1f)
                     .fillMaxWidth()
-                    .padding(start = 5.dp, end = 5.dp),
+                    .padding(start = 5.dp, end = 5.dp, bottom = 2.dp),
                 horizontalArrangement = Arrangement.spacedBy(8.dp)
             ) {
                 CalculatorButton(
@@ -184,8 +192,9 @@ fun CalculatorPortraitScreen(
 
             Row(
                 modifier = Modifier
+                    .weight(1f)
                     .fillMaxWidth()
-                    .padding(start = 5.dp, end = 5.dp),
+                    .padding(start = 5.dp, end = 5.dp, bottom = 2.dp),
                 horizontalArrangement = Arrangement.spacedBy(8.dp)
             ) {
                 CalculatorButton(
@@ -225,7 +234,8 @@ fun CalculatorPortraitScreen(
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(start = 5.dp, end = 5.dp, bottom = 10.dp),
+                    .padding(start = 5.dp, end = 5.dp, bottom = 2.dp)
+                    .weight(1f),
                 horizontalArrangement = Arrangement.spacedBy(8.dp)
             ) {
                 CalculatorButton(
@@ -264,7 +274,7 @@ fun CalculatorPortraitScreen(
                     symbol = "=",
                     modifier = operationButtonModifier
                         .weight(weight = 1f)
-                        .background(Brush.verticalGradient(colors = listOf(Orange, darkOrange))),
+                        .background(Brush.verticalGradient(colors = listOf(LightOrange, darkOrange))),
                     onClick = {
                         onEvent(CalculatorEvent.Calculate)
                     }
@@ -273,5 +283,4 @@ fun CalculatorPortraitScreen(
         }
     }
 }
-
 

@@ -47,9 +47,7 @@ import androidx.compose.ui.unit.sp
 import com.example.calculator.CalculatorEvent
 import com.example.calculator.ui.screens.SuggestedFontSizesStatus.Companion.rememberSuggestedFontSizesStatus
 import com.example.calculator.util.HapticFeedback
-import com.example.calculator.util.ImmutableWrapper
 import com.example.calculator.util.roundToPx
-import com.example.calculator.util.toImmutableWrapper
 import com.example.calculator.util.toIntSize
 import com.example.calculator.util.toSp
 import kotlin.math.min
@@ -109,7 +107,7 @@ fun AutoSizeText(
     text: String,
     modifier: Modifier = Modifier,
     color: Color = if (text.contains('r')) Color.Red else Color.White,
-    suggestedFontSizes: ImmutableWrapper<List<TextUnit>> = emptyList<TextUnit>().toImmutableWrapper(),
+    suggestedFontSizes: List<TextUnit> = emptyList(),
     suggestedFontSizesStatus: SuggestedFontSizesStatus = suggestedFontSizes.rememberSuggestedFontSizesStatus,
     stepGranularityTextSize: TextUnit = TextUnit.Unspecified,
     minTextSize: TextUnit = TextUnit.Unspecified,
@@ -172,7 +170,7 @@ fun AutoSizeText(
     text: AnnotatedString,
     modifier: Modifier = Modifier,
     color: Color = Color.Unspecified,
-    suggestedFontSizes: ImmutableWrapper<List<TextUnit>> = emptyList<TextUnit>().toImmutableWrapper(),
+    suggestedFontSizes: List<TextUnit> = emptyList(),
     suggestedFontSizesStatus: SuggestedFontSizesStatus = suggestedFontSizes.rememberSuggestedFontSizesStatus,
     stepGranularityTextSize: TextUnit = TextUnit.Unspecified,
     minTextSize: TextUnit = TextUnit.Unspecified,
@@ -187,7 +185,7 @@ fun AutoSizeText(
     softWrap: Boolean = true,
     maxLines: Int = 1,
     minLines: Int = 1,
-    inlineContent: ImmutableWrapper<Map<String, InlineTextContent>> = mapOf<String, InlineTextContent>().toImmutableWrapper(),
+    inlineContent: Map<String, InlineTextContent> = mapOf(),
     onTextLayout: (TextLayoutResult) -> Unit = {},
     style: TextStyle = LocalTextStyle.current,
     lineSpacingRatio: Float = style.lineHeight.value / style.fontSize.value,
@@ -241,10 +239,10 @@ fun AutoSizeText(
 
             val electedFontSize = kotlin.run {
                 if (suggestedFontSizesStatus == SuggestedFontSizesStatus.VALID)
-                    suggestedFontSizes.value
+                    suggestedFontSizes
                 else
                     remember(key1 = suggestedFontSizes) {
-                        suggestedFontSizes.value
+                        suggestedFontSizes
                             .filter { it.isSp }
                             .takeIf { it.isNotEmpty() }
                             ?.sortedBy { it.value }
@@ -272,7 +270,7 @@ fun AutoSizeText(
                 softWrap = softWrap,
                 maxLines = maxLines,
                 minLines = minLines,
-                inlineContent = inlineContent.value,
+                inlineContent = inlineContent,
                 onTextLayout = onTextLayout,
                 style = combinedTextStyle.copy(
                     fontSize = electedFontSize,
@@ -407,7 +405,7 @@ enum class SuggestedFontSizesStatus {
                 VALID
             else
                 INVALID
-        val ImmutableWrapper<List<TextUnit>>.rememberSuggestedFontSizesStatus
-            @Composable get() = remember(key1 = this) { value.suggestedFontSizesStatus }
+        val List<TextUnit>.rememberSuggestedFontSizesStatus
+            @Composable get() = remember(key1 = this) { suggestedFontSizesStatus }
     }
 }
