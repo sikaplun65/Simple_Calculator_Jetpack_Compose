@@ -23,7 +23,6 @@ import com.example.calculator.CalculatorEvent
 import com.example.calculator.CalculatorOperation
 import com.example.calculator.CalculatorState
 import com.example.calculator.getExpressionWithSpaces
-import com.example.calculator.getExpression
 import com.example.calculator.ui.components.CalculatorLandscapeButton
 import com.example.calculator.ui.theme.Orange
 import com.example.calculator.ui.theme.darkOrange

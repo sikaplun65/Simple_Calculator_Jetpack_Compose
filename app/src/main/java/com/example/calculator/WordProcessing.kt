@@ -2,59 +2,76 @@ package com.example.calculator
 
 fun getExpressionWithSpaces(state: CalculatorState, isErrorCalculate: Boolean): String {
 
-    var expression = getExpression(state)
     val blocks = mutableListOf<String>()
-    var number = ""
     val errorMessage = "Error! You can't divide by 0"
-    var secondLastBracket = ""
-    var lastBracket = ""
-    var bracketCounter = 0
 
-    while (expression.isNotEmpty()) {
-        if (expression[0] == '-') {
-            blocks.add(expression[0].toString())
-            expression = expression.substring(1, expression.length)
-        }
+    val firstOperand = state.firstOperand
+    val secondOperand = state.secondOperand
 
-        if (expression[0] == '(') {
-            bracketCounter++
-            blocks.add(expression[0].toString())
-            lastBracket = expression[expression.length - 1].toString()
-            expression = expression.substring(1, expression.length - 1)
-            if (bracketCounter == 2) {
-                secondLastBracket = ")"
-            }
-        }
+    if (!firstOperand.contains("−")) {
+        blocks.add(addSpaces(firstOperand))
+    } else {
+        blocks.add("−")
+        blocks.add(addSpaces(firstOperand.substring(1, firstOperand.length)))
+    }
 
-        val operatorInd =
-            expression.indexOfFirst { it == '-' || it == '+' || it == '×' || it == '÷' }
+    if (state.operation != null) {
+        blocks.add(addOperation(state.operation))
+    }
 
-        if (operatorInd != -1) {
-            number = expression.substring(0, operatorInd)
+    if (!state.isSecondOperandNegative) {
+        blocks.add(addSpaces(secondOperand))
+    } else {
+        blocks.add("(−")
+        blocks.add(addSpaces(secondOperand.substring(1, secondOperand.length)))
+        blocks.add(")")
+    }
 
-            blocks.add(addSpaces(number))
-            blocks.add(expression[operatorInd].toString())
+    if (state.isInBrackets) {
+        val firstNumber = state.firstOperandInBrackets
+        val secondNumber = state.secondOperandInBrackets
 
-            expression = expression.substring(operatorInd + 1, expression.length)
+        blocks.add("(")
+
+        if (!state.isFirstOperandInBracketsNegative) {
+            blocks.add(addSpaces(firstNumber))
         } else {
-            number = expression.substring(0, expression.length)
-            blocks.add(addSpaces(number))
-            expression = ""
+            blocks.add("(−")
+            blocks.add(addSpaces(firstNumber.substring(1, firstNumber.length)))
+            blocks.add(")")
         }
+
+        if (state.operationInBrackets != null) {
+            blocks.add(addOperation(state.operationInBrackets))
+        }
+
+        if (!state.isSecondOperandInBracketsNegative) {
+            blocks.add(addSpaces(secondNumber))
+        } else {
+            blocks.add("(−")
+            blocks.add(addSpaces(secondNumber.substring(1, secondNumber.length)))
+            blocks.add(")")
+        }
+
+        blocks.add(")")
     }
-    if (secondLastBracket.isNotEmpty()) {
-        blocks.add(secondLastBracket)
-    }
-    if (lastBracket.isNotEmpty()) {
-        blocks.add(lastBracket)
-    }
+
     return if (isErrorCalculate) errorMessage else blocks.joinToString("")
 }
+
+private fun addOperation(operation: CalculatorOperation): String =
+    when (operation) {
+        CalculatorOperation.Addition -> "+"
+        CalculatorOperation.Divide -> "÷"
+        CalculatorOperation.Multiply -> "×"
+        CalculatorOperation.Subtract -> "−"
+    }
+
 
 private fun addSpaces(number: String): String {
 
     var inputNumber = number
-    var outputNumber = ""
+    val outputNumber = mutableListOf<String>()
     val integerNum = StringBuilder()
     var decimalNumber = ""
 
@@ -76,45 +93,9 @@ private fun addSpaces(number: String): String {
             integerNum.append(digit)
         }
     }
-    outputNumber = integerNum.toString().reversed()
 
-    if (decimalNumber.isNotEmpty()) {
-        outputNumber += decimalNumber
-    }
-    return outputNumber
-}
+    outputNumber.add(integerNum.toString().reversed())
+    outputNumber.add(decimalNumber)
 
-fun getExpression(
-    state: CalculatorState
-): String {
-
-    val sb = StringBuilder(state.firstOperand).append(state.operation?.operation ?: "")
-
-    if (!state.isInBrackets) {
-        if (!state.isSecondOperandNegative) {
-            sb.append(state.secondOperand)
-        } else {
-            sb.append("(").append(state.secondOperand).append(")")
-        }
-    } else {
-        sb.append("(")
-
-        if (!state.isFirstOperandInBracketsNegative) {
-            sb.append(state.firstOperandInBrackets)
-        } else {
-            sb.append("(").append(state.firstOperandInBrackets).append(")")
-        }
-
-        sb.append(state.operationInBrackets?.operation ?: "")
-
-        if (!state.isSecondOperandInBracketsNegative) {
-            sb.append(state.secondOperandInBrackets)
-        } else {
-            sb.append("(").append(state.secondOperandInBrackets).append(")")
-        }
-
-        sb.append(")")
-    }
-
-    return sb.toString()
+    return outputNumber.joinToString("")
 }
