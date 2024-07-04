@@ -2,61 +2,58 @@ package com.example.calculator
 
 fun getExpressionWithSpaces(state: CalculatorState, isErrorCalculate: Boolean): String {
 
-    val blocks = mutableListOf<String>()
+    val blocks = StringBuilder()
     val errorMessage = "Error! You can't divide by 0"
 
     val firstOperand = state.firstOperand
-    val secondOperand = state.secondOperand
-
     if (!firstOperand.contains("−")) {
-        blocks.add(addSpaces(firstOperand))
+        blocks.append(addSpaces(firstOperand))
     } else {
-        blocks.add("−")
-        blocks.add(addSpaces(firstOperand.substring(1, firstOperand.length)))
+        blocks.append("−")
+        blocks.append(addSpaces(firstOperand.substring(1, firstOperand.length)))
     }
 
     if (state.operation != null) {
-        blocks.add(addOperation(state.operation))
+        blocks.append(addOperation(state.operation))
     }
 
-    if (!state.isSecondOperandNegative) {
-        blocks.add(addSpaces(secondOperand))
-    } else {
-        blocks.add("(−")
-        blocks.add(addSpaces(secondOperand.substring(1, secondOperand.length)))
-        blocks.add(")")
-    }
+    blocks.append(
+        getOperand(state.isSecondOperandNegative, state.secondOperand)
+    )
 
     if (state.isInBrackets) {
-        val firstNumber = state.firstOperandInBrackets
-        val secondNumber = state.secondOperandInBrackets
 
-        blocks.add("(")
+        blocks.append("(")
 
-        if (!state.isFirstOperandInBracketsNegative) {
-            blocks.add(addSpaces(firstNumber))
-        } else {
-            blocks.add("(−")
-            blocks.add(addSpaces(firstNumber.substring(1, firstNumber.length)))
-            blocks.add(")")
-        }
+        blocks.append(
+            getOperand(state.isFirstOperandInBracketsNegative, state.firstOperandInBrackets)
+        )
 
         if (state.operationInBrackets != null) {
-            blocks.add(addOperation(state.operationInBrackets))
+            blocks.append(addOperation(state.operationInBrackets))
         }
 
-        if (!state.isSecondOperandInBracketsNegative) {
-            blocks.add(addSpaces(secondNumber))
-        } else {
-            blocks.add("(−")
-            blocks.add(addSpaces(secondNumber.substring(1, secondNumber.length)))
-            blocks.add(")")
-        }
+        blocks.append(
+            getOperand(state.isSecondOperandInBracketsNegative, state.secondOperandInBrackets)
+        )
 
-        blocks.add(")")
+        blocks.append(")")
     }
 
-    return if (isErrorCalculate) errorMessage else blocks.joinToString("")
+    return if (isErrorCalculate) errorMessage else blocks.toString()
+}
+
+private fun getOperand(isNegativeOperand: Boolean, operand: String): String {
+    val sb = StringBuilder()
+
+    if (!isNegativeOperand) {
+        sb.append(addSpaces(operand))
+    } else {
+        sb.append("(−")
+        sb.append(addSpaces(operand.substring(1, operand.length)))
+        sb.append(")")
+    }
+    return sb.toString()
 }
 
 private fun addOperation(operation: CalculatorOperation): String =
@@ -67,11 +64,10 @@ private fun addOperation(operation: CalculatorOperation): String =
         CalculatorOperation.Subtract -> "−"
     }
 
-
 private fun addSpaces(number: String): String {
 
     var inputNumber = number
-    val outputNumber = mutableListOf<String>()
+    val outputNumber = StringBuilder()
     val integerNum = StringBuilder()
     var decimalNumber = ""
 
@@ -94,8 +90,7 @@ private fun addSpaces(number: String): String {
         }
     }
 
-    outputNumber.add(integerNum.toString().reversed())
-    outputNumber.add(decimalNumber)
+    outputNumber.append(integerNum.toString().reversed()).append(decimalNumber)
 
-    return outputNumber.joinToString("")
+    return outputNumber.toString()
 }
