@@ -35,7 +35,6 @@ fun CalculatorPortraitScreen(
     state: CalculatorState,
     modifier: Modifier = Modifier,
     onEvent: (CalculatorEvent) -> Unit,
-    isErrorCalculate: Boolean
 ) {
     Box(modifier = modifier) {
         Column(
@@ -54,7 +53,7 @@ fun CalculatorPortraitScreen(
                 verticalAlignment = Alignment.Bottom,
             ) {
                 AutoSizeText(
-                    text = getExpressionWithSpaces(state, isErrorCalculate),
+                    text = getExpressionWithSpaces(state),
                     onEvent = onEvent
                 )
             }

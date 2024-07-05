@@ -1,40 +1,40 @@
 package com.example.calculator
 
-fun getExpressionWithSpaces(state: CalculatorState, isErrorCalculate: Boolean): String {
+fun getExpressionWithSpaces(state: CalculatorState): String {
 
-    val blocks = StringBuilder()
+    val expressionSB = StringBuilder()
     val errorMessage = "Error! You can't divide by 0"
 
-    blocks.append(addSpaces(state.firstOperand))
+    expressionSB.append(addSpaces(state.firstOperand))
 
     if (state.operation != null) {
-        blocks.append(addOperation(state.operation))
+        expressionSB.append(addOperation(state.operation))
     }
 
-    blocks.append(
+    expressionSB.append(
         getOperand(state.isSecondOperandNegative, state.secondOperand)
     )
 
     if (state.isInBrackets) {
 
-        blocks.append("(")
+        expressionSB.append("(")
 
-        blocks.append(
+        expressionSB.append(
             getOperand(state.isFirstOperandInBracketsNegative, state.firstOperandInBrackets)
         )
 
         if (state.operationInBrackets != null) {
-            blocks.append(addOperation(state.operationInBrackets))
+            expressionSB.append(addOperation(state.operationInBrackets))
         }
 
-        blocks.append(
+        expressionSB.append(
             getOperand(state.isSecondOperandInBracketsNegative, state.secondOperandInBrackets)
         )
 
-        blocks.append(")")
+        expressionSB.append(")")
     }
 
-    return if (isErrorCalculate) errorMessage else blocks.toString()
+    return if (state.isErrorCalculate) errorMessage else expressionSB.toString()
 }
 
 private fun getOperand(isNegativeOperand: Boolean, operand: String): String {
@@ -68,7 +68,8 @@ private fun addSpaces(number: String): String {
 
     val commaIndex = number.indexOf(',')
     if (commaIndex != -1) {
-        inputNumber = number.substring(if (isNumberNegative) 1 else 0, commaIndex)
+        val index = if (isNumberNegative) 1 else 0
+        inputNumber = number.substring(index, commaIndex)
         decimalNumber = number.substring(commaIndex, number.length)
     }
 

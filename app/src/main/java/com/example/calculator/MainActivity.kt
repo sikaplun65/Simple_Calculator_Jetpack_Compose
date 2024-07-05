@@ -28,14 +28,12 @@ class MainActivity : ComponentActivity() {
 
                 val viewModel: CalculatorMainScreenViewModel by viewModels()
                 val state = viewModel.state
-                val isErrorCalculate = viewModel.isErrorCalculate
 
                 when(configuration.orientation){
                     Configuration.ORIENTATION_PORTRAIT -> {
                         CalculatorPortraitScreen(
                             state = state,
                             onEvent = viewModel::onEvent,
-                            isErrorCalculate = isErrorCalculate,
                             modifier = Modifier
                                 .fillMaxSize()
                                 .background(Color.Black)
@@ -46,7 +44,6 @@ class MainActivity : ComponentActivity() {
                         CalculatorLandscapeScreen(
                             state = state,
                             onEvent = viewModel::onEvent,
-                            isErrorCalculate = isErrorCalculate,
                             modifier = Modifier
                                 .fillMaxSize()
                                 .background(Color.Black)

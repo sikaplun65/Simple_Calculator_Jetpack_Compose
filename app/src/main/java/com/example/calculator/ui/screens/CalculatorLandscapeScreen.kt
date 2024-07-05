@@ -34,7 +34,6 @@ fun CalculatorLandscapeScreen(
     state: CalculatorState,
     modifier: Modifier = Modifier,
     onEvent: (CalculatorEvent) -> Unit,
-    isErrorCalculate: Boolean
 ) {
     val widthBetweenBlocs = 8.dp
 
@@ -53,7 +52,7 @@ fun CalculatorLandscapeScreen(
                 horizontalArrangement = Arrangement.spacedBy(8.dp)
             ){
                 AutoSizeText(
-                    text = getExpressionWithSpaces(state, isErrorCalculate),
+                    text = getExpressionWithSpaces(state),
                     onEvent = onEvent,
                 )
             }

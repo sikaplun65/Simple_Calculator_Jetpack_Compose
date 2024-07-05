@@ -12,8 +12,7 @@ class CalculatorMainScreenViewModel : ViewModel() {
 
     var state by mutableStateOf(CalculatorState())
         private set
-    var isErrorCalculate by mutableStateOf(false)
-        private set
+
     private var isChangeDigit = true
 
     fun onEvent(event: CalculatorEvent) {
@@ -66,7 +65,7 @@ class CalculatorMainScreenViewModel : ViewModel() {
         }
 
         if (operation == CalculatorOperation.Divide && secondOperand == 0.0) {
-            isErrorCalculate = true
+            state = state.copy(isErrorCalculate = true)
             return
         }
 
@@ -118,7 +117,7 @@ class CalculatorMainScreenViewModel : ViewModel() {
     }
 
     private fun enterOperation(operation: CalculatorOperation) {
-        if (isErrorCalculate) return
+        if (state.isErrorCalculate) return
         calculate()
         when {
             state.isInBrackets -> {
@@ -135,7 +134,7 @@ class CalculatorMainScreenViewModel : ViewModel() {
     }
 
     private fun enterDigit(digit: Int) {
-        if (!isChangeDigit || isErrorCalculate) return
+        if (!isChangeDigit || state.isErrorCalculate) return
 
         when {
             state.isInBrackets -> {
@@ -181,7 +180,7 @@ class CalculatorMainScreenViewModel : ViewModel() {
     }
 
     private fun enterDecimal() {
-        if (!isChangeDigit || isErrorCalculate) return
+        if (!isChangeDigit || state.isErrorCalculate) return
         when {
             state.isInBrackets -> {
                 when {
@@ -215,7 +214,7 @@ class CalculatorMainScreenViewModel : ViewModel() {
     }
 
     private fun performDeletion() {
-        if (!isChangeDigit || isErrorCalculate) return
+        if (!isChangeDigit || state.isErrorCalculate) return
 
         if (state.isInBrackets) {
             when {
@@ -274,7 +273,7 @@ class CalculatorMainScreenViewModel : ViewModel() {
     }
 
     private fun convertNumberToString(digit: BigDecimal): String =
-        digit.setScale(3, RoundingMode.HALF_EVEN) // 3 decimal places
+        digit.setScale(5, RoundingMode.HALF_EVEN) // 5 decimal places
             .toString()
             .dropLastWhile { it == '0' }
             .dropLastWhile { it == '.' }
@@ -284,7 +283,7 @@ class CalculatorMainScreenViewModel : ViewModel() {
         str.replace(oldValue = ",", newValue = ".", ignoreCase = true).toDouble()
 
     private fun performPercentCalculation() {
-        if (!isChangeDigit || isErrorCalculate) return
+        if (!isChangeDigit || state.isErrorCalculate) return
 
         when {
             state.isInBrackets -> {
@@ -431,7 +430,7 @@ class CalculatorMainScreenViewModel : ViewModel() {
         }
         state = when {
             state.isInBrackets -> {
-                if (isErrorCalculate) state.copy(secondOperandInBrackets = "")
+                if (state.isErrorCalculate) state.copy(secondOperandInBrackets = "")
                 else state.copy(
                     firstOperandInBrackets = "",
                     secondOperandInBrackets = "",
@@ -442,17 +441,16 @@ class CalculatorMainScreenViewModel : ViewModel() {
             }
 
             else -> {
-                if (isErrorCalculate) state.copy(secondOperand = "") else CalculatorState()
+                if (state.isErrorCalculate) state.copy(secondOperand = "") else CalculatorState()
             }
         }
         isChangeDigit = true
-        isErrorCalculate = false
+        state = state.copy(isErrorCalculate = false)
     }
 
     private fun fullClearScreen() {
         state = CalculatorState()
         isChangeDigit = true
-        isErrorCalculate = false
     }
 
     companion object {
