@@ -87,8 +87,12 @@ class CalculatorMainScreenViewModel : ViewModel() {
             state = state.copy(isSecondOperandNegative = false)
         }
         if (state.firstOperandInBrackets.isNotEmpty()) {
-            val number = getNumberFromString(state.firstOperandInBrackets)
-            if (number > 0) state = state.copy(isFirstOperandInBracketsNegative = false)
+            state =
+                if (state.firstOperandInBrackets.contains('-')) {
+                    state.copy(isFirstOperandInBracketsNegative = true)
+                } else {
+                    state.copy(isFirstOperandInBracketsNegative = false)
+                }
         }
         if (state.secondOperandInBrackets.isEmpty()) {
             state = state.copy(isSecondOperandInBracketsNegative = false)

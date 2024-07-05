@@ -5,13 +5,7 @@ fun getExpressionWithSpaces(state: CalculatorState, isErrorCalculate: Boolean): 
     val blocks = StringBuilder()
     val errorMessage = "Error! You can't divide by 0"
 
-    val firstOperand = state.firstOperand
-    if (!firstOperand.contains("−")) {
-        blocks.append(addSpaces(firstOperand))
-    } else {
-        blocks.append("−")
-        blocks.append(addSpaces(firstOperand.substring(1, firstOperand.length)))
-    }
+    blocks.append(addSpaces(state.firstOperand))
 
     if (state.operation != null) {
         blocks.append(addOperation(state.operation))
@@ -49,8 +43,8 @@ private fun getOperand(isNegativeOperand: Boolean, operand: String): String {
     if (!isNegativeOperand) {
         sb.append(addSpaces(operand))
     } else {
-        sb.append("(−")
-        sb.append(addSpaces(operand.substring(1, operand.length)))
+        sb.append("(")
+        sb.append(addSpaces(operand))
         sb.append(")")
     }
     return sb.toString()
@@ -65,16 +59,16 @@ private fun addOperation(operation: CalculatorOperation): String =
     }
 
 private fun addSpaces(number: String): String {
-
-    var inputNumber = number
+    val isNumberNegative = number.contains('-')
+    val minus = if (isNumberNegative)"−" else ""
+    var inputNumber = if (isNumberNegative) number.substring(1,number.length) else number
     val outputNumber = StringBuilder()
     val integerNum = StringBuilder()
     var decimalNumber = ""
 
     val commaIndex = number.indexOf(',')
-
     if (commaIndex != -1) {
-        inputNumber = number.substring(0, commaIndex)
+        inputNumber = number.substring(if (isNumberNegative) 1 else 0, commaIndex)
         decimalNumber = number.substring(commaIndex, number.length)
     }
 
@@ -90,7 +84,7 @@ private fun addSpaces(number: String): String {
         }
     }
 
-    outputNumber.append(integerNum.toString().reversed()).append(decimalNumber)
+    outputNumber.append(minus).append(integerNum.toString().reversed()).append(decimalNumber)
 
     return outputNumber.toString()
 }
