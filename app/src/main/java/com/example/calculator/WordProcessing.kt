@@ -34,7 +34,11 @@ fun getExpressionWithSpaces(state: CalculatorState): String {
         expressionSB.append(")")
     }
 
-    return if (state.isErrorCalculate) errorMessage else expressionSB.toString()
+    return if (state.isErrorCalculate) {
+        errorMessage
+    } else {
+        expressionSB.toString().replace(oldValue = ".", newValue = ",", ignoreCase = true)
+    }
 }
 
 private fun getOperand(isNegativeOperand: Boolean, operand: String): String {
@@ -60,13 +64,13 @@ private fun addOperation(operation: CalculatorOperation): String =
 
 private fun addSpaces(number: String): String {
     val isNumberNegative = number.contains('-')
-    val minus = if (isNumberNegative)"−" else ""
-    var inputNumber = if (isNumberNegative) number.substring(1,number.length) else number
+    val minus = if (isNumberNegative) "−" else ""
+    var inputNumber = if (isNumberNegative) number.substring(1, number.length) else number
     val outputNumber = StringBuilder()
     val integerNum = StringBuilder()
     var decimalNumber = ""
 
-    val commaIndex = number.indexOf(',')
+    val commaIndex = number.indexOf('.')
     if (commaIndex != -1) {
         val index = if (isNumberNegative) 1 else 0
         inputNumber = number.substring(index, commaIndex)

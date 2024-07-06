@@ -40,7 +40,7 @@ class CalculatorMainScreenViewModel : ViewModel() {
             firstOperandInBrackets = ""
         )
         if (state.secondOperand.isNotEmpty()) {
-            val number = getNumberFromString(state.secondOperand)
+            val number = state.secondOperand.toDouble()
             if (number < 0) {
                 state = state.copy(isSecondOperandNegative = true)
             }
@@ -48,36 +48,41 @@ class CalculatorMainScreenViewModel : ViewModel() {
     }
 
     private fun calculate() {
-        var firstOperand by Delegates.notNull<Double>()
-        var secondOperand by Delegates.notNull<Double>()
+        var firstOperand by Delegates.notNull<BigDecimal>()
+        var secondOperand by Delegates.notNull<BigDecimal>()
         var operation by Delegates.notNull<CalculatorOperation>()
 
         if (state.isInBrackets) {
             if (state.firstOperandInBrackets.isEmpty() || state.secondOperandInBrackets.isEmpty()) return
-            firstOperand = getNumberFromString(state.firstOperandInBrackets)
-            secondOperand = getNumberFromString(state.secondOperandInBrackets)
+
+            firstOperand = state.firstOperandInBrackets.toBigDecimal()
+            secondOperand = state.secondOperandInBrackets.toBigDecimal()
             operation = state.operationInBrackets!!
         } else {
             if (state.firstOperand.isEmpty() || state.secondOperand.isEmpty()) return
-            firstOperand = getNumberFromString(state.firstOperand)
-            secondOperand = getNumberFromString(state.secondOperand)
+
+            firstOperand = state.firstOperand.toBigDecimal()
+            secondOperand = state.secondOperand.toBigDecimal()
             operation = state.operation!!
         }
 
-        if (operation == CalculatorOperation.Divide && secondOperand == 0.0) {
+        if (operation == CalculatorOperation.Divide && secondOperand == BigDecimal.valueOf(0)) {
             state = state.copy(isErrorCalculate = true)
             return
         }
 
         val result = performCalculate(operation, firstOperand, secondOperand)
+            .toString()
+            .dropLastWhile { it == '0' }
+            .dropLastWhile { it == '.' }
 
 
         state = if (state.isInBrackets) state.copy(
-            firstOperandInBrackets = convertNumberToString(result),
+            firstOperandInBrackets = result,
             operationInBrackets = null,
             secondOperandInBrackets = ""
         ) else state.copy(
-            firstOperand = convertNumberToString(result),
+            firstOperand = result,
             operation = null,
             secondOperand = ""
         )
@@ -102,18 +107,13 @@ class CalculatorMainScreenViewModel : ViewModel() {
 
     private fun performCalculate(
         operation: CalculatorOperation,
-        firstOperand: Double,
-        secondOperand: Double
+        firstOperand: BigDecimal,
+        secondOperand: BigDecimal
     ): BigDecimal = when (operation) {
-        CalculatorOperation.Addition -> BigDecimal.valueOf(firstOperand)
-            .plus(BigDecimal.valueOf(secondOperand))
-
-        CalculatorOperation.Divide -> BigDecimal.valueOf(firstOperand / secondOperand)//.div(BigDecimal.valueOf(secondOperand))
-        CalculatorOperation.Multiply -> BigDecimal.valueOf(firstOperand)
-            .times(BigDecimal.valueOf(secondOperand))
-
-        CalculatorOperation.Subtract -> BigDecimal.valueOf(firstOperand)
-            .minus(BigDecimal.valueOf(secondOperand))
+        CalculatorOperation.Addition -> firstOperand.setScale(5).plus(secondOperand)
+        CalculatorOperation.Divide -> firstOperand.setScale(5).div(secondOperand)
+        CalculatorOperation.Multiply -> firstOperand.setScale(5).times(secondOperand)
+        CalculatorOperation.Subtract -> firstOperand.setScale(5).minus(secondOperand)
     }
 
     private fun enterOperation(operation: CalculatorOperation) {
@@ -184,14 +184,14 @@ class CalculatorMainScreenViewModel : ViewModel() {
         when {
             state.isInBrackets -> {
                 when {
-                    state.operationInBrackets != null && !state.secondOperandInBrackets.contains(",") -> {
+                    state.operationInBrackets != null && !state.secondOperandInBrackets.contains(".") -> {
                         state =
-                            state.copy(secondOperandInBrackets = if (state.secondOperandInBrackets.isEmpty()) "0," else state.secondOperandInBrackets + ",")
+                            state.copy(secondOperandInBrackets = if (state.secondOperandInBrackets.isEmpty()) "0." else state.secondOperandInBrackets + ".")
                     }
 
-                    state.operationInBrackets == null && !state.firstOperandInBrackets.contains(",") -> {
+                    state.operationInBrackets == null && !state.firstOperandInBrackets.contains(".") -> {
                         state =
-                            state.copy(firstOperandInBrackets = if (state.firstOperandInBrackets.isEmpty()) "0," else state.firstOperandInBrackets + ",")
+                            state.copy(firstOperandInBrackets = if (state.firstOperandInBrackets.isEmpty()) "0." else state.firstOperandInBrackets + ".")
                     }
 
                 }
@@ -199,14 +199,14 @@ class CalculatorMainScreenViewModel : ViewModel() {
 
             !state.isInBrackets -> {
                 when {
-                    state.operation != null && !state.secondOperand.contains(",") -> {
+                    state.operation != null && !state.secondOperand.contains(".") -> {
                         state =
-                            state.copy(secondOperand = if (state.secondOperand.isEmpty()) "0," else state.secondOperand + ",")
+                            state.copy(secondOperand = if (state.secondOperand.isEmpty()) "0." else state.secondOperand + ".")
                     }
 
-                    state.operation == null && !state.firstOperand.contains(",") -> {
+                    state.operation == null && !state.firstOperand.contains(".") -> {
                         state =
-                            state.copy(firstOperand = if (state.firstOperand.isEmpty()) "0," else state.firstOperand + ",")
+                            state.copy(firstOperand = if (state.firstOperand.isEmpty()) "0." else state.firstOperand + ".")
                     }
                 }
             }
@@ -272,93 +272,59 @@ class CalculatorMainScreenViewModel : ViewModel() {
         }
     }
 
-    private fun convertNumberToString(digit: BigDecimal): String =
-        digit.setScale(5, RoundingMode.HALF_EVEN) // 5 decimal places
-            .toString()
-            .dropLastWhile { it == '0' }
-            .dropLastWhile { it == '.' }
-            .replace(oldValue = ".", newValue = ",", ignoreCase = true)
-
-    private fun getNumberFromString(str: String): Double =
-        str.replace(oldValue = ",", newValue = ".", ignoreCase = true).toDouble()
-
     private fun performPercentCalculation() {
         if (!isChangeDigit || state.isErrorCalculate) return
 
         when {
             state.isInBrackets -> {
-                if (state.firstOperandInBrackets.isEmpty() || state.firstOperandInBrackets == "0,") return
-                val onePercentFirstNum = getNumberFromString(state.firstOperandInBrackets) / 100
+                if (state.firstOperandInBrackets.isEmpty() || state.firstOperandInBrackets == "0.") return
+                val onePercentFirstNum = state.firstOperandInBrackets.toDouble()/100
 
                 state = when (state.operationInBrackets) {
                     null -> {
                         state.copy(
-                            firstOperandInBrackets = convertNumberToString(
-                                BigDecimal.valueOf(
-                                    onePercentFirstNum
-                                )
-                            )
+                            firstOperandInBrackets = BigDecimal.valueOf(onePercentFirstNum).toString()
                         )
                     }
 
                     else -> {
-                        if (state.secondOperandInBrackets.isEmpty() || state.secondOperandInBrackets == "0,") return
-                        val secondNum = getNumberFromString(state.secondOperandInBrackets)
+                        if (state.secondOperandInBrackets.isEmpty() || state.secondOperandInBrackets == "0.") return //Todo поменять ',' на '.'
+                        val secondNum = state.secondOperandInBrackets.toDouble()
 
                         if (state.operationInBrackets == CalculatorOperation.Multiply || state.operationInBrackets == CalculatorOperation.Divide)
                             state.copy(
-                                secondOperandInBrackets = convertNumberToString(
-                                    BigDecimal.valueOf(
-                                        secondNum / 100
-                                    )
-                                )
+                                secondOperandInBrackets = BigDecimal.valueOf(secondNum/100).toString()
                             )
                         else
                             state.copy(
-                                secondOperandInBrackets = convertNumberToString(
-                                    BigDecimal.valueOf(
-                                        onePercentFirstNum * secondNum
-                                    )
-                                )
+                                secondOperandInBrackets = BigDecimal.valueOf(onePercentFirstNum * secondNum).toString()
                             )
                     }
                 }
             }
 
             !state.isInBrackets -> {
-                if (state.firstOperand.isEmpty() || state.firstOperand == "0,") return
-                val onePercentFirstNum = getNumberFromString(state.firstOperand) / 100
+                if (state.firstOperand.isEmpty() || state.firstOperand == "0.") return
+                val onePercentFirstNum = state.firstOperand.toDouble() / 100
 
                 state = when (state.operation) {
                     null -> {
                         state.copy(
-                            firstOperand = convertNumberToString(
-                                BigDecimal.valueOf(
-                                    onePercentFirstNum
-                                )
-                            )
+                            firstOperand = BigDecimal.valueOf(onePercentFirstNum).toString()
                         )
                     }
 
                     else -> {
-                        if (state.secondOperand.isEmpty() || state.secondOperand == "0,") return
-                        val secondNum = getNumberFromString(state.secondOperand)
+                        if (state.secondOperand.isEmpty() || state.secondOperand == "0.") return
+                        val secondNum = state.secondOperand.toDouble()
 
                         if (state.operation == CalculatorOperation.Multiply || state.operation == CalculatorOperation.Divide)
                             state.copy(
-                                secondOperand = convertNumberToString(
-                                    BigDecimal.valueOf(
-                                        secondNum / 100
-                                    )
-                                )
+                                secondOperand = BigDecimal.valueOf(secondNum/100).toString()
                             )
                         else
                             state.copy(
-                                secondOperand = convertNumberToString(
-                                    BigDecimal.valueOf(
-                                        onePercentFirstNum * secondNum
-                                    )
-                                )
+                                secondOperand = BigDecimal.valueOf(onePercentFirstNum * secondNum).toString()
                             )
 
                     }
@@ -371,24 +337,20 @@ class CalculatorMainScreenViewModel : ViewModel() {
         when {
             state.isInBrackets -> {
                 when {
-                    state.operationInBrackets == null && state.firstOperandInBrackets.isNotEmpty() && state.firstOperandInBrackets != "0," -> {
-                        val number = -getNumberFromString(state.firstOperandInBrackets)
+                    state.operationInBrackets == null && state.firstOperandInBrackets.isNotEmpty() && state.firstOperandInBrackets != "0." -> {
+                        val number = -state.firstOperandInBrackets.toDouble()
                         val isNegative = number < 0
                         state = state.copy(
-                            firstOperandInBrackets = convertNumberToString(
-                                BigDecimal.valueOf(number)
-                            ),
+                            firstOperandInBrackets = BigDecimal.valueOf(number).toString(),
                             isFirstOperandInBracketsNegative = isNegative
                         )
                     }
 
-                    state.operationInBrackets != null && state.secondOperandInBrackets.isNotEmpty() && state.secondOperandInBrackets != "0," -> {
-                        val number = -getNumberFromString(state.secondOperandInBrackets)
+                    state.operationInBrackets != null && state.secondOperandInBrackets.isNotEmpty() && state.secondOperandInBrackets != "0." -> {
+                        val number = -state.secondOperandInBrackets.toDouble()
                         val isNegative = number < 0
                         state = state.copy(
-                            secondOperandInBrackets = convertNumberToString(
-                                BigDecimal.valueOf(number)
-                            ),
+                            secondOperandInBrackets = BigDecimal.valueOf(number).toString(),
                             isSecondOperandInBracketsNegative = isNegative
                         )
                     }
@@ -397,24 +359,20 @@ class CalculatorMainScreenViewModel : ViewModel() {
 
             !state.isInBrackets -> {
                 when {
-                    state.operation == null && state.firstOperand.isNotEmpty() && state.firstOperand != "0," -> {
-                        val number = -getNumberFromString(state.firstOperand)
+                    state.operation == null && state.firstOperand.isNotEmpty() && state.firstOperand != "0." -> {
+                        val number = -state.firstOperand.toDouble()
                         state =
                             state.copy(
-                                firstOperand = convertNumberToString(
-                                    BigDecimal.valueOf(
-                                        number
-                                    )
-                                )
+                                firstOperand = BigDecimal.valueOf(number).toString()
                             )
                     }
 
-                    state.operation != null && state.secondOperand.isNotEmpty() && state.secondOperand != "0," -> {
-                        val number = -getNumberFromString(state.secondOperand)
+                    state.operation != null && state.secondOperand.isNotEmpty() && state.secondOperand != "0." -> {
+                        val number = -state.secondOperand.toDouble()
                         val isNegative = number < 0
                         state =
                             state.copy(
-                                secondOperand = convertNumberToString(BigDecimal.valueOf(number)),
+                                secondOperand = BigDecimal.valueOf(number).toString(),
                                 isSecondOperandNegative = isNegative
                             )
                     }
