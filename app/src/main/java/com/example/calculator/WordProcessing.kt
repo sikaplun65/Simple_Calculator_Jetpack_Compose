@@ -70,11 +70,11 @@ private fun addSpaces(number: String): String {
     val integerNum = StringBuilder()
     var decimalNumber = ""
 
-    val commaIndex = number.indexOf('.')
-    if (commaIndex != -1) {
+    val pointIndex = number.indexOf('.')
+    if (pointIndex != -1) {
         val index = if (isNumberNegative) 1 else 0
-        inputNumber = number.substring(index, commaIndex)
-        decimalNumber = number.substring(commaIndex, number.length)
+        inputNumber = number.substring(index, pointIndex)
+        decimalNumber = number.substring(pointIndex, number.length)
     }
 
     var counter = 0

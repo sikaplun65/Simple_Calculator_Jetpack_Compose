@@ -5,6 +5,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import java.math.BigDecimal
+import java.math.RoundingMode
 import kotlin.properties.Delegates
 
 class CalculatorMainScreenViewModel : ViewModel() {
@@ -277,29 +278,35 @@ class CalculatorMainScreenViewModel : ViewModel() {
         when {
             state.isInBrackets -> {
                 if (state.firstOperandInBrackets.isEmpty() || state.firstOperandInBrackets == "0.") return
+
                 val onePercentFirstNum = state.firstOperandInBrackets.toDouble() / 100
 
                 state = when (state.operationInBrackets) {
                     null -> {
                         state.copy(
-                            firstOperandInBrackets = BigDecimal.valueOf(onePercentFirstNum)
-                                .toString()
+                            firstOperandInBrackets = onePercentFirstNum.toBigDecimal().toString()
+                                .dropLastWhile { it == '0' }
+                                .dropLastWhile { it == '.' }
                         )
                     }
 
                     else -> {
-                        if (state.secondOperandInBrackets.isEmpty() || state.secondOperandInBrackets == "0.") return //Todo поменять ',' на '.'
+                        if (state.secondOperandInBrackets.isEmpty() || state.secondOperandInBrackets == "0.") return
+
                         val secondNum = state.secondOperandInBrackets.toDouble()
 
                         if (state.operationInBrackets == CalculatorOperation.Multiply || state.operationInBrackets == CalculatorOperation.Divide)
                             state.copy(
-                                secondOperandInBrackets = BigDecimal.valueOf(secondNum / 100)
+                                secondOperandInBrackets = (secondNum / 100).toBigDecimal()
                                     .toString()
                             )
                         else
                             state.copy(
-                                secondOperandInBrackets = BigDecimal.valueOf(onePercentFirstNum * secondNum)
+                                secondOperandInBrackets = (onePercentFirstNum * secondNum).toBigDecimal()
+                                    .setScale(2,RoundingMode.HALF_UP)
                                     .toString()
+                                    .dropLastWhile { it == '0' }
+                                    .dropLastWhile { it == '.' }
                             )
                     }
                 }
@@ -307,28 +314,37 @@ class CalculatorMainScreenViewModel : ViewModel() {
 
             !state.isInBrackets -> {
                 if (state.firstOperand.isEmpty() || state.firstOperand == "0.") return
+
                 val onePercentFirstNum = state.firstOperand.toDouble() / 100
 
                 state = when (state.operation) {
                     null -> {
                         state.copy(
-                            firstOperand = BigDecimal.valueOf(onePercentFirstNum).toString()
+                            firstOperand = onePercentFirstNum.toBigDecimal().toString()
+                                .dropLastWhile { it == '0' }
+                                .dropLastWhile { it == '.' }
                         )
                     }
 
                     else -> {
                         if (state.secondOperand.isEmpty() || state.secondOperand == "0.") return
+
                         val secondNum = state.secondOperand.toDouble()
 
-                        if (state.operation == CalculatorOperation.Multiply || state.operation == CalculatorOperation.Divide)
+                        if (state.operation == CalculatorOperation.Multiply || state.operation == CalculatorOperation.Divide) {
                             state.copy(
-                                secondOperand = BigDecimal.valueOf(secondNum / 100).toString()
+                                secondOperand = (secondNum / 100).toBigDecimal().toString()
                             )
-                        else
+                        } else {
                             state.copy(
-                                secondOperand = BigDecimal.valueOf(onePercentFirstNum * secondNum)
+                                secondOperand = (onePercentFirstNum * secondNum).toBigDecimal()
+                                    .setScale(2, RoundingMode.HALF_UP)
                                     .toString()
+                                    .dropLastWhile { it == '0' }
+                                    .dropLastWhile { it == '.' }
                             )
+                        }
+
 
                     }
                 }
