@@ -65,16 +65,18 @@ private fun addOperation(operation: CalculatorOperation): String =
 private fun addSpaces(number: String): String {
     val isNumberNegative = number.contains('-')
     val minus = if (isNumberNegative) "−" else ""
-    var inputNumber = if (isNumberNegative) number.substring(1, number.length) else number
+    val startIndex =  if(isNumberNegative) 1 else 0
+    var inputNumber = ""
     val outputNumber = StringBuilder()
     val integerNum = StringBuilder()
     var decimalNumber = ""
 
     val pointIndex = number.indexOf('.')
     if (pointIndex != -1) {
-        val index = if (isNumberNegative) 1 else 0
-        inputNumber = number.substring(index, pointIndex)
+        inputNumber = number.substring(startIndex, pointIndex)
         decimalNumber = number.substring(pointIndex, number.length)
+    }else{
+        inputNumber = number.substring(startIndex,number.length)
     }
 
     var counter = 0
