@@ -49,7 +49,8 @@ fun CalculatorLandscapeScreen(
                     .fillMaxWidth()
                     .padding(start = 5.dp, end = 5.dp)
                     .weight(1.5f),
-                horizontalArrangement = Arrangement.spacedBy(8.dp)
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                verticalAlignment = Alignment.Bottom,
             ){
                 AutoSizeText(
                     text = getExpressionWithSpaces(state),

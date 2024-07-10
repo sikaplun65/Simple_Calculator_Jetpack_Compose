@@ -72,6 +72,7 @@ class CalculatorMainScreenViewModel : ViewModel() {
         }
 
         val result = performCalculate(operation, firstOperand, secondOperand)
+            .setScale(9,RoundingMode.CEILING)
             .toString()
             .dropLastWhile { it == '0' }
             .dropLastWhile { it == '.' }
@@ -110,10 +111,10 @@ class CalculatorMainScreenViewModel : ViewModel() {
         firstOperand: BigDecimal,
         secondOperand: BigDecimal
     ): BigDecimal = when (operation) {
-        CalculatorOperation.Addition -> firstOperand.setScale(5).plus(secondOperand)
-        CalculatorOperation.Divide -> firstOperand.setScale(5).div(secondOperand)
-        CalculatorOperation.Multiply -> firstOperand.setScale(5).times(secondOperand)
-        CalculatorOperation.Subtract -> firstOperand.setScale(5).minus(secondOperand)
+        CalculatorOperation.Addition -> firstOperand.plus(secondOperand)
+        CalculatorOperation.Divide -> firstOperand.setScale(9).div(secondOperand)
+        CalculatorOperation.Multiply -> firstOperand.times(secondOperand)
+        CalculatorOperation.Subtract -> firstOperand.minus(secondOperand)
     }
 
     private fun enterOperation(operation: CalculatorOperation) {
@@ -303,7 +304,7 @@ class CalculatorMainScreenViewModel : ViewModel() {
                         else
                             state.copy(
                                 secondOperandInBrackets = (onePercentFirstNum * secondNum).toBigDecimal()
-                                    .setScale(2,RoundingMode.HALF_UP)
+                                    .setScale(9,RoundingMode.HALF_UP)
                                     .toString()
                                     .dropLastWhile { it == '0' }
                                     .dropLastWhile { it == '.' }
@@ -338,7 +339,7 @@ class CalculatorMainScreenViewModel : ViewModel() {
                         } else {
                             state.copy(
                                 secondOperand = (onePercentFirstNum * secondNum).toBigDecimal()
-                                    .setScale(2, RoundingMode.HALF_UP)
+                                    .setScale(9, RoundingMode.HALF_UP)
                                     .toString()
                                     .dropLastWhile { it == '0' }
                                     .dropLastWhile { it == '.' }
