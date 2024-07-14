@@ -9,29 +9,29 @@ fun getExpressionWithSpaces(state: CalculatorState): String {
 
     if (state.operation != null) {
         expressionSB.append(addOperation(state.operation))
-    }
-
-    expressionSB.append(
-        getOperand(state.isSecondOperandNegative, state.secondOperand)
-    )
-
-    if (state.isInBrackets) {
-
-        expressionSB.append("(")
 
         expressionSB.append(
-            getOperand(state.isFirstOperandInBracketsNegative, state.firstOperandInBrackets)
+            getOperand(state.isSecondOperandNegative, state.secondOperand)
         )
 
-        if (state.operationInBrackets != null) {
-            expressionSB.append(addOperation(state.operationInBrackets))
+        if (state.isInBrackets) {
+
+            expressionSB.append("(")
+
+            expressionSB.append(
+                getOperand(state.isFirstOperandInBracketsNegative, state.firstOperandInBrackets)
+            )
+
+            if (state.operationInBrackets != null) {
+                expressionSB.append(addOperation(state.operationInBrackets))
+
+                expressionSB.append(
+                    getOperand(state.isSecondOperandInBracketsNegative, state.secondOperandInBrackets)
+                )
+            }
+
+            expressionSB.append(")")
         }
-
-        expressionSB.append(
-            getOperand(state.isSecondOperandInBracketsNegative, state.secondOperandInBrackets)
-        )
-
-        expressionSB.append(")")
     }
 
     return if (state.isErrorCalculate) {
