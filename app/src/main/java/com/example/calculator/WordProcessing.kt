@@ -66,7 +66,7 @@ private fun addSpaces(number: String): String {
     val isNumberNegative = number.contains('-')
     val minus = if (isNumberNegative) "−" else ""
     val startIndex =  if(isNumberNegative) 1 else 0
-    var inputNumber = ""
+    var inputNumber: String
     val outputNumber = StringBuilder()
     val integerNum = StringBuilder()
     var decimalNumber = ""

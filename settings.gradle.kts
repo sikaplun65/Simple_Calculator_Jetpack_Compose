@@ -13,6 +13,6 @@ dependencyResolutionManagement {
     }
 }
 
-rootProject.name = "Calculatou_IOS"
+rootProject.name = "Calculator"
 include(":app")
  
