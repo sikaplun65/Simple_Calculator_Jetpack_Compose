@@ -45,6 +45,8 @@ import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.isSpecified
 import androidx.compose.ui.unit.sp
 import com.example.calculator.CalculatorEvent
+import com.example.calculator.CalculatorState
+import com.example.calculator.getExpressionWithSpaces
 import com.example.calculator.ui.screens.SuggestedFontSizesStatus.Companion.rememberSuggestedFontSizesStatus
 import com.example.calculator.util.HapticFeedback
 import com.example.calculator.util.roundToPx
@@ -104,9 +106,10 @@ import kotlin.math.min
 
 @Composable
 fun AutoSizeText(
-    text: String,
+    state: CalculatorState,
+    text: String = getExpressionWithSpaces(state),
+    color: Color = if (state.isErrorCalculate) Color.Red else Color.White,
     modifier: Modifier = Modifier,
-    color: Color = if (text.contains('r')) Color.Red else Color.White,
     suggestedFontSizes: List<TextUnit> = emptyList(),
     suggestedFontSizesStatus: SuggestedFontSizesStatus = suggestedFontSizes.rememberSuggestedFontSizesStatus,
     stepGranularityTextSize: TextUnit = TextUnit.Unspecified,
@@ -117,7 +120,7 @@ fun AutoSizeText(
     fontFamily: FontFamily? = null,
     letterSpacing: TextUnit = TextUnit.Unspecified,
     textDecoration: TextDecoration? = null,
-    alignment: Alignment = Alignment.TopStart,
+    alignment: Alignment = Alignment.BottomStart,
     overflow: TextOverflow = TextOverflow.Clip,
     softWrap: Boolean = true,
     maxLines: Int = 1,

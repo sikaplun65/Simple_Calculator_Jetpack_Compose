@@ -97,7 +97,6 @@ class CalculatorMainScreenViewModel : ViewModel() {
         if (state.secondOperandInBrackets.isEmpty()) {
             state = state.copy(isSecondOperandInBracketsNegative = false)
         }
-
         isChangeDigit = false
     }
 
@@ -107,7 +106,7 @@ class CalculatorMainScreenViewModel : ViewModel() {
         secondOperand: BigDecimal
     ): BigDecimal = when (operation) {
         CalculatorOperation.Addition -> firstOperand.plus(secondOperand)
-        CalculatorOperation.Divide -> firstOperand.setScale(9).div(secondOperand)
+        CalculatorOperation.Divide -> firstOperand.setScale(NUMBER_OF_DECIMAL_PLACES).div(secondOperand)
         CalculatorOperation.Multiply -> firstOperand.times(secondOperand)
         CalculatorOperation.Subtract -> firstOperand.minus(secondOperand)
     }
@@ -425,13 +424,14 @@ class CalculatorMainScreenViewModel : ViewModel() {
 
     private fun getStringFromNumber(number: BigDecimal): String {
         return number
-            .setScale(9,RoundingMode.CEILING)
+            .setScale(NUMBER_OF_DECIMAL_PLACES,RoundingMode.CEILING)
             .toString()
             .dropLastWhile { it == '0' }
             .dropLastWhile { it == '.' }
     }
 
     companion object {
-        const val MAX_LENGTH_DIGIT = 12
+        private const val MAX_LENGTH_DIGIT = 12
+        private const val NUMBER_OF_DECIMAL_PLACES = 9
     }
 }

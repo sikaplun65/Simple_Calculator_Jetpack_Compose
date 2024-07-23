@@ -20,7 +20,6 @@ import androidx.compose.ui.unit.dp
 import com.example.calculator.CalculatorEvent
 import com.example.calculator.CalculatorOperation
 import com.example.calculator.CalculatorState
-import com.example.calculator.getExpressionWithSpaces
 import com.example.calculator.ui.components.CalculatorButton
 import com.example.calculator.ui.theme.LightOrange
 import com.example.calculator.ui.theme.darkOrange
@@ -53,7 +52,7 @@ fun CalculatorPortraitScreen(
                 verticalAlignment = Alignment.Bottom,
             ) {
                 AutoSizeText(
-                    text = getExpressionWithSpaces(state),
+                    state = state,
                     onEvent = onEvent
                 )
             }
