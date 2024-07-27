@@ -6,7 +6,6 @@ import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import java.math.BigDecimal
 import java.math.RoundingMode
-import kotlin.properties.Delegates
 
 class CalculatorMainScreenViewModel : ViewModel() {
 
@@ -37,7 +36,8 @@ class CalculatorMainScreenViewModel : ViewModel() {
         state = state.copy(
             isInBrackets = !state.isInBrackets,
             secondOperand = state.firstOperandInBrackets.ifEmpty { "" },
-            firstOperandInBrackets = ""
+            firstOperandInBrackets = "",
+            operationInBrackets = null
         )
         if (state.secondOperand.isNotEmpty()) {
             val number = state.secondOperand.toDouble()
@@ -48,69 +48,87 @@ class CalculatorMainScreenViewModel : ViewModel() {
     }
 
     private fun calculate() {
-        var firstOperand by Delegates.notNull<BigDecimal>()
-        var secondOperand by Delegates.notNull<BigDecimal>()
-        var operation by Delegates.notNull<CalculatorOperation>()
-
-        if (state.isInBrackets) {
-            if (state.firstOperandInBrackets.isEmpty() || state.secondOperandInBrackets.isEmpty()) return
-
-            firstOperand = state.firstOperandInBrackets.toBigDecimal()
-            secondOperand = state.secondOperandInBrackets.toBigDecimal()
-            operation = state.operationInBrackets!!
-        } else {
-            if (state.firstOperand.isEmpty() || state.secondOperand.isEmpty()) return
-
-            firstOperand = state.firstOperand.toBigDecimal()
-            secondOperand = state.secondOperand.toBigDecimal()
-            operation = state.operation!!
-        }
+        val (firstOperand, secondOperand, operation) = getOperandsAndOperation() ?: return
 
         if (operation == CalculatorOperation.Divide && isOperandZero(secondOperand.toString())) {
             state = state.copy(isErrorCalculate = true)
             return
         }
 
-        val result = getStringFromNumber(performCalculate(operation, firstOperand, secondOperand))
+        val result = performCalculation(operation, firstOperand, secondOperand)
 
-        state = if (state.isInBrackets) state.copy(
-            firstOperandInBrackets = result,
-            operationInBrackets = null,
-            secondOperandInBrackets = ""
-        ) else state.copy(
-            firstOperand = result,
-            operation = null,
-            secondOperand = ""
-        )
+        updateStateWithResult(result)
 
-        if (state.secondOperand.isEmpty()) {
-            state = state.copy(isSecondOperandNegative = false)
-        }
-        if (state.firstOperandInBrackets.isNotEmpty()) {
-            state =
-                if (state.firstOperandInBrackets.contains('-')) {
-                    state.copy(isFirstOperandInBracketsNegative = true)
-                } else {
-                    state.copy(isFirstOperandInBracketsNegative = false)
-                }
-        }
-        if (state.secondOperandInBrackets.isEmpty()) {
-            state = state.copy(isSecondOperandInBracketsNegative = false)
-        }
+        resetNegativeFlags()
         isChangeDigit = false
     }
 
-    private fun performCalculate(
+    private fun getOperandsAndOperation(): Triple<BigDecimal, BigDecimal, CalculatorOperation>? {
+        val (firstOp, secondOp, op) =
+            if (state.isInBrackets) {
+                if (state.firstOperandInBrackets.isEmpty() || state.secondOperandInBrackets.isEmpty()) return null
+                Triple(
+                    first = state.firstOperandInBrackets.toBigDecimal(),
+                    second = state.secondOperandInBrackets.toBigDecimal(),
+                    third = state.operationInBrackets!!
+                )
+            } else {
+                if (state.firstOperand.isEmpty() || state.secondOperand.isEmpty()) return null
+                Triple(
+                    first = state.firstOperand.toBigDecimal(),
+                    second = state.secondOperand.toBigDecimal(),
+                    third = state.operation!!
+                )
+            }
+
+        return Triple(firstOp, secondOp, op)
+    }
+
+    private fun updateStateWithResult(result: String) {
+        state = if (state.isInBrackets) {
+            state.copy(
+                firstOperandInBrackets = result,
+                operationInBrackets = null,
+                secondOperandInBrackets = ""
+            )
+        } else {
+            state.copy(
+                firstOperand = result,
+                operation = null,
+                secondOperand = ""
+            )
+        }
+    }
+
+    private fun resetNegativeFlags() {
+        if (state.secondOperand.isEmpty()) {
+            state = state.copy(isSecondOperandNegative = false)
+        }
+
+        if (state.firstOperandInBrackets.isNotEmpty()) {
+            state = state.copy(
+                isFirstOperandInBracketsNegative = state.firstOperandInBrackets.contains('-')
+            )
+        }
+
+        if (state.secondOperandInBrackets.isEmpty()) {
+            state = state.copy(isSecondOperandInBracketsNegative = false)
+        }
+    }
+
+    private fun performCalculation(
         operation: CalculatorOperation,
         firstOperand: BigDecimal,
         secondOperand: BigDecimal
-    ): BigDecimal = when (operation) {
-        CalculatorOperation.Addition -> firstOperand.plus(secondOperand)
-        CalculatorOperation.Divide -> firstOperand.setScale(NUMBER_OF_DECIMAL_PLACES)
-            .div(secondOperand)
+    ): String {
+        val result = when (operation) {
+            CalculatorOperation.Addition -> firstOperand.plus(secondOperand)
+            CalculatorOperation.Divide -> firstOperand.setScale(NUMBER_OF_DECIMAL_PLACES).div(secondOperand)
+            CalculatorOperation.Multiply -> firstOperand.times(secondOperand)
+            CalculatorOperation.Subtract -> firstOperand.minus(secondOperand)
+        }.setScale(NUMBER_OF_DECIMAL_PLACES, RoundingMode.CEILING)
 
-        CalculatorOperation.Multiply -> firstOperand.times(secondOperand)
-        CalculatorOperation.Subtract -> firstOperand.minus(secondOperand)
+        return result.toPlainString().dropLastWhile { it == '0' }.dropLastWhile { it == '.' }
     }
 
     private fun enterOperation(operation: CalculatorOperation) {
@@ -118,12 +136,12 @@ class CalculatorMainScreenViewModel : ViewModel() {
         calculate()
         when {
             state.isInBrackets -> {
-                if (state.firstOperandInBrackets.isEmpty() || state.firstOperandInBrackets == "0,") return
+                if (state.firstOperandInBrackets.isEmpty() || state.firstOperandInBrackets == "0.") return
                 state = state.copy(operationInBrackets = operation)
             }
 
             !state.isInBrackets -> {
-                if (state.firstOperand.isEmpty() || state.firstOperand == "0,") return
+                if (state.firstOperand.isEmpty() || state.firstOperand == "0.") return
                 state = state.copy(operation = operation)
             }
         }
@@ -133,242 +151,270 @@ class CalculatorMainScreenViewModel : ViewModel() {
     private fun enterDigit(digit: Int) {
         if (!isChangeDigit || state.isErrorCalculate) return
 
-        when {
-            state.isInBrackets -> {
-                when {
-                    state.operationInBrackets == null && state.firstOperandInBrackets.length < MAX_LENGTH_DIGIT -> {
-                        state = if (state.firstOperandInBrackets == "0") state.copy(
-                            firstOperandInBrackets = digit.toString()
-                        ) else state.copy(
-                            firstOperandInBrackets = state.firstOperandInBrackets + digit
-                        )
-                    }
-
-                    state.operationInBrackets != null && state.secondOperandInBrackets.length < MAX_LENGTH_DIGIT -> {
-                        state = if (state.secondOperandInBrackets == "0") state.copy(
-                            secondOperandInBrackets = digit.toString()
-                        ) else state.copy(
-                            secondOperandInBrackets = state.secondOperandInBrackets + digit
-                        )
-                    }
-                }
+        val (operation, firstOperand, secondOperand) =
+            if (state.isInBrackets) {
+                listOf(
+                    state.operationInBrackets,
+                    state.firstOperandInBrackets,
+                    state.secondOperandInBrackets
+                )
+            } else {
+                listOf(state.operation, state.firstOperand, state.secondOperand)
             }
 
-            !state.isInBrackets -> {
-                when {
-                    state.operation == null && state.firstOperand.length < MAX_LENGTH_DIGIT -> {
-                        state = if (state.firstOperand == "0") state.copy(
-                            firstOperand = digit.toString()
-                        ) else state.copy(
-                            firstOperand = state.firstOperand + digit
-                        )
-                    }
+        val currentOperand = (if (operation == null) firstOperand else secondOperand).toString()
+        val isFirstOperand = operation == null
+        val operandLength = currentOperand.length
 
-                    state.operation != null && state.secondOperand.length < MAX_LENGTH_DIGIT -> {
-                        state = if (state.secondOperand == "0") state.copy(
-                            secondOperand = digit.toString()
-                        ) else state.copy(
-                            secondOperand = state.secondOperand + digit
-                        )
+        if (operandLength < MAX_LENGTH_DIGIT) {
+
+            val newValue = if (currentOperand == "0") digit.toString() else currentOperand + digit
+
+            state =
+                if (state.isInBrackets) {
+                    if (isFirstOperand) {
+                        state.copy(firstOperandInBrackets = newValue)
+                    } else {
+                        state.copy(secondOperandInBrackets = newValue)
+                    }
+                } else {
+                    if (isFirstOperand) {
+                        state.copy(firstOperand = newValue)
+                    } else {
+                        state.copy(secondOperand = newValue)
                     }
                 }
-            }
         }
     }
 
     private fun enterDecimal() {
         if (!isChangeDigit || state.isErrorCalculate) return
-        when {
-            state.isInBrackets -> {
-                when {
-                    state.operationInBrackets != null && !state.secondOperandInBrackets.contains(".") -> {
-                        state =
-                            state.copy(secondOperandInBrackets = if (state.secondOperandInBrackets.isEmpty()) "0." else state.secondOperandInBrackets + ".")
-                    }
 
-                    state.operationInBrackets == null && !state.firstOperandInBrackets.contains(".") -> {
-                        state =
-                            state.copy(firstOperandInBrackets = if (state.firstOperandInBrackets.isEmpty()) "0." else state.firstOperandInBrackets + ".")
-                    }
-
-                }
+        val (operation, firstOperand, secondOperand) =
+            if (state.isInBrackets) {
+                listOf(
+                    state.operationInBrackets,
+                    state.firstOperandInBrackets,
+                    state.secondOperandInBrackets
+                )
+            } else {
+                listOf(state.operation, state.firstOperand, state.secondOperand)
             }
 
-            !state.isInBrackets -> {
-                when {
-                    state.operation != null && !state.secondOperand.contains(".") -> {
-                        state =
-                            state.copy(secondOperand = if (state.secondOperand.isEmpty()) "0." else state.secondOperand + ".")
-                    }
+        val currentOperand = (if (operation == null) firstOperand else secondOperand).toString()
 
-                    state.operation == null && !state.firstOperand.contains(".") -> {
-                        state =
-                            state.copy(firstOperand = if (state.firstOperand.isEmpty()) "0." else state.firstOperand + ".")
+        if (!currentOperand.contains(".")) {
+
+            val newValue = if (currentOperand.isEmpty()) "0." else "$currentOperand."
+
+            state =
+                if (state.isInBrackets) {
+                    if (operation == null) {
+                        state.copy(firstOperandInBrackets = newValue)
+                    } else {
+                        state.copy(secondOperandInBrackets = newValue)
+                    }
+                } else {
+                    if (operation == null) {
+                        state.copy(firstOperand = newValue)
+                    } else {
+                        state.copy(secondOperand = newValue)
                     }
                 }
-            }
         }
     }
 
     private fun performDeletion() {
         if (!isChangeDigit || state.isErrorCalculate) return
 
-        if (state.isInBrackets) {
-            when {
-                state.secondOperandInBrackets.isNotEmpty() -> {
-                    state = state.copy(
-                        secondOperandInBrackets = state.secondOperandInBrackets.dropLast(1)
-                    )
-                    if (state.secondOperandInBrackets == "-" || state.firstOperandInBrackets == "0") {
-                        state = state.copy(
-                            secondOperandInBrackets = state.secondOperandInBrackets.dropLast(1),
+        val isInBrackets = state.isInBrackets
+        val currentOperands = if (isInBrackets) {
+            listOf(state.firstOperandInBrackets, state.secondOperandInBrackets)
+        } else {
+            listOf(state.firstOperand, state.secondOperand)
+        }
+
+        var (firstOperand, secondOperand) = currentOperands
+        val isOperationPresent =
+            if (isInBrackets) state.operationInBrackets != null else state.operation != null
+
+        when {
+            secondOperand.isNotEmpty() -> {
+                state = if (isInBrackets) {
+                    state.copy(secondOperandInBrackets = secondOperand.dropLast(1))
+                } else {
+                    state.copy(secondOperand = secondOperand.dropLast(1))
+                }
+                secondOperand =
+                    if (isInBrackets) state.secondOperandInBrackets else state.secondOperand
+                handleZeroAndNegativeState(isInBrackets, isOperationPresent, secondOperand)
+            }
+
+            isOperationPresent -> {
+                state = if (isInBrackets) {
+                    state.copy(operationInBrackets = null)
+                } else {
+                    state.copy(operation = null)
+                }
+            }
+
+            firstOperand.isNotEmpty() -> {
+                state = if (isInBrackets) {
+                    state.copy(firstOperandInBrackets = firstOperand.dropLast(1))
+                } else {
+                    state.copy(firstOperand = firstOperand.dropLast(1))
+                }
+                firstOperand =
+                    if (isInBrackets) state.firstOperandInBrackets else state.firstOperand
+                handleZeroAndNegativeState(isInBrackets, false, firstOperand)
+            }
+        }
+    }
+
+    private fun handleZeroAndNegativeState(
+        isInBrackets: Boolean,
+        isOperationPresent: Boolean,
+        operand: String
+    ) {
+        if ((operand == "-" || operand == "0" || operand == "-0")) {
+            state =
+                if (isInBrackets) {
+                    if (isOperationPresent) {
+                        state.copy(
+                            secondOperandInBrackets = operand.dropLastWhile { it == '0' }
+                                .dropLastWhile { it == '-' },
                             isSecondOperandInBracketsNegative = false
                         )
-                    }
-                }
-
-                state.operationInBrackets != null -> state =
-                    state.copy(operationInBrackets = null)
-
-                state.firstOperandInBrackets.isNotEmpty() -> {
-                    state =
-                        state.copy(firstOperandInBrackets = state.firstOperandInBrackets.dropLast(1))
-                    if (state.firstOperandInBrackets == "-" || state.firstOperandInBrackets == "0") {
-                        state = state.copy(
-                            firstOperandInBrackets = state.firstOperandInBrackets.dropLast(1),
+                    } else {
+                        state.copy(
+                            firstOperandInBrackets = operand.dropLastWhile { it == '0' }
+                                .dropLastWhile { it == '-' },
                             isFirstOperandInBracketsNegative = false
                         )
                     }
-                    return
-                }
-            }
-            if (state.firstOperandInBrackets.isEmpty()) {
-                state = state.copy(isInBrackets = !state.isInBrackets)
-            }
-        } else {
-            when {
-                state.secondOperand.isNotEmpty() -> {
-                    state = state.copy(secondOperand = state.secondOperand.dropLast(1))
-                    if (state.secondOperand == "-" || state.secondOperand == "0") {
-                        state = state.copy(
-                            secondOperand = state.secondOperand.dropLast(1),
+                } else {
+                    if (isOperationPresent) {
+                        state.copy(
+                            secondOperand = operand.dropLastWhile { it == '0' }
+                                .dropLastWhile { it == '-' },
                             isSecondOperandNegative = false
+                        )
+                    } else {
+                        state.copy(
+                            firstOperand = operand.dropLastWhile { it == '0' }
+                                .dropLastWhile { it == '-' },
                         )
                     }
                 }
-
-                state.operation != null -> state = state.copy(operation = null)
-
-                state.firstOperand.isNotEmpty() -> {
-                    state = state.copy(firstOperand = state.firstOperand.dropLast(1))
-                    if (state.firstOperand == "-" || state.firstOperand == "0") {
-                        state = state.copy(firstOperand = state.firstOperand.dropLast(1))
-                    }
-                }
-            }
         }
     }
 
     private fun performPercentCalculation() {
         if (!isChangeDigit || state.isErrorCalculate) return
 
-        when {
-            state.isInBrackets -> {
-                if (state.firstOperandInBrackets.isEmpty() || isOperandZero(state.firstOperandInBrackets)) return
-
-                val onePercentFirstNum = state.firstOperandInBrackets.toDouble() / 100
-
-                state = when (state.operationInBrackets) {
-                    null -> {
-                        state.copy(
-                            firstOperandInBrackets = getStringFromNumber(onePercentFirstNum.toBigDecimal())
-                        )
-                    }
-
-                    else -> {
-                        if (state.secondOperandInBrackets.isEmpty() || isOperandZero(state.secondOperandInBrackets)) return
-
-                        val secondNum = state.secondOperandInBrackets.toDouble()
-
-                        if (state.operationInBrackets == CalculatorOperation.Multiply || state.operationInBrackets == CalculatorOperation.Divide) {
-
-                            val onePercentOfSecondNumber = secondNum / 100
-
-                            state.copy(
-                                secondOperandInBrackets = getStringFromNumber(
-                                    onePercentOfSecondNumber.toBigDecimal()
-                                )
-                            )
-                        } else {
-
-                            val percentageOfSecondNumber = onePercentFirstNum * secondNum
-
-                            state.copy(
-                                secondOperandInBrackets = getStringFromNumber(
-                                    percentageOfSecondNumber.toBigDecimal()
-                                )
-                            )
-                        }
-                    }
-                }
+        val (firstOperand, secondOperand, operation, isInBrackets) =
+            if (state.isInBrackets) {
+                listOf(
+                    state.firstOperandInBrackets,
+                    state.secondOperandInBrackets,
+                    state.operationInBrackets,
+                    true
+                )
+            } else {
+                listOf(state.firstOperand, state.secondOperand, state.operation, false)
             }
 
-            !state.isInBrackets -> {
-                if (state.firstOperand.isEmpty() || isOperandZero(state.firstOperand)) return
+        if (firstOperand.toString().isEmpty() || isOperandZero(firstOperand.toString())) return
 
-                val onePercentFirstNum = state.firstOperand.toDouble() / 100
+        val onePercentFirstNum = firstOperand.toString().toDouble() / 100
 
-                state = when (state.operation) {
-                    null -> {
-                        state.copy(
-                            firstOperand = getStringFromNumber(onePercentFirstNum.toBigDecimal())
-                        )
-                    }
+        state = when {
+            operation == null -> {
+                updateFirstOperandInPercentCalculation(onePercentFirstNum, isInBrackets as Boolean)
+            }
 
-                    else -> {
-                        if (state.secondOperand.isEmpty() || isOperandZero(state.secondOperand)) return
+            secondOperand.toString().isEmpty() || isOperandZero(secondOperand.toString()) -> return
 
-                        val secondNum = state.secondOperand.toDouble()
+            else -> {
+                val secondNum = secondOperand.toString().toDouble()
+                updateSecondOperandInPercentCalculation(
+                    onePercentFirstNum,
+                    secondNum,
+                    operation as CalculatorOperation,
+                    isInBrackets as Boolean
+                )
+            }
+        }
+    }
 
-                        if (state.operation == CalculatorOperation.Multiply || state.operation == CalculatorOperation.Divide) {
+    private fun updateFirstOperandInPercentCalculation(
+        onePercentFirstNum: Double,
+        isInBrackets: Boolean
+    ): CalculatorState {
+        return if (isInBrackets) {
+            state.copy(firstOperandInBrackets = getStringFromNumber(onePercentFirstNum.toBigDecimal()))
+        } else {
+            state.copy(firstOperand = getStringFromNumber(onePercentFirstNum.toBigDecimal()))
+        }
+    }
 
-                            val onePercentOfSecondNumber = secondNum / 100
+    private fun updateSecondOperandInPercentCalculation(
+        onePercentFirstNum: Double,
+        secondNum: Double,
+        operation: CalculatorOperation?,
+        isInBrackets: Boolean
+    ): CalculatorState {
+        return if (operation == CalculatorOperation.Multiply || operation == CalculatorOperation.Divide) {
+            val onePercentOfSecondNumber = secondNum / 100
+            when (isInBrackets) {
+                true -> state.copy(
+                    secondOperandInBrackets = getStringFromNumber(
+                        onePercentOfSecondNumber.toBigDecimal()
+                    )
+                )
 
-                            state.copy(
-                                secondOperand = getStringFromNumber(onePercentOfSecondNumber.toBigDecimal())
-                            )
-                        } else {
+                false -> state.copy(secondOperand = getStringFromNumber(onePercentOfSecondNumber.toBigDecimal()))
+            }
+        } else {
+            val percentageOfSecondNumber = onePercentFirstNum * secondNum
+            when (isInBrackets) {
+                true -> state.copy(
+                    secondOperandInBrackets = getStringFromNumber(
+                        percentageOfSecondNumber.toBigDecimal()
+                    )
+                )
 
-                            val percentageOfSecondNumber = onePercentFirstNum * secondNum
-
-                            state.copy(
-                                secondOperand = getStringFromNumber(percentageOfSecondNumber.toBigDecimal())
-                            )
-                        }
-                    }
-                }
+                false -> state.copy(secondOperand = getStringFromNumber(percentageOfSecondNumber.toBigDecimal()))
             }
         }
     }
 
     private fun inversionPositiveDigitToNegativeDigitAndViceVersa() {
+
+        fun invertOperand(operand: String): Pair<String, Boolean> {
+            val number = -operand.toBigDecimal()
+            return getStringFromNumber(number) to (number < BigDecimal.ZERO)
+        }
+
         when {
             state.isInBrackets -> {
                 when {
-                    state.operationInBrackets == null && state.firstOperandInBrackets.isNotEmpty() && !isOperandZero(state.firstOperandInBrackets) -> {
-                        val number = -state.firstOperandInBrackets.toBigDecimal()
-                        val isNegative = number < BigDecimal.valueOf(0)
+                    state.operationInBrackets == null && state.firstOperandInBrackets.isNotEmpty() && !isOperandZero(
+                        state.firstOperandInBrackets
+                    ) -> {
+                        val (newFirstOperand, isNegative) = invertOperand(state.firstOperandInBrackets)
                         state = state.copy(
-                            firstOperandInBrackets = getStringFromNumber(number),
+                            firstOperandInBrackets = newFirstOperand,
                             isFirstOperandInBracketsNegative = isNegative
                         )
                     }
 
-                    state.operationInBrackets != null && state.secondOperandInBrackets.isNotEmpty() && !isOperandZero(state.secondOperandInBrackets) -> {
-                        val number = -state.secondOperandInBrackets.toBigDecimal()
-                        val isNegative = number < BigDecimal(0)
+                    state.operationInBrackets != null && state.secondOperandInBrackets.isNotEmpty() && !isOperandZero(
+                        state.secondOperandInBrackets
+                    ) -> {
+                        val (newSecondOperand, isNegative) = invertOperand(state.secondOperandInBrackets)
                         state = state.copy(
-                            secondOperandInBrackets = getStringFromNumber(number),
+                            secondOperandInBrackets = newSecondOperand,
                             isSecondOperandInBracketsNegative = isNegative
                         )
                     }
@@ -377,22 +423,21 @@ class CalculatorMainScreenViewModel : ViewModel() {
 
             !state.isInBrackets -> {
                 when {
-                    state.operation == null && state.firstOperand.isNotEmpty() && !isOperandZero(state.firstOperand) -> {
-                        val number = -state.firstOperand.toBigDecimal()
-                        state =
-                            state.copy(
-                                firstOperand = getStringFromNumber(number),
-                            )
+                    state.operation == null && state.firstOperand.isNotEmpty() && !isOperandZero(
+                        state.firstOperand
+                    ) -> {
+                        val (newFirstOperand, _) = invertOperand(state.firstOperand)
+                        state = state.copy(firstOperand = newFirstOperand)
                     }
 
-                    state.operation != null && state.secondOperand.isNotEmpty() && !isOperandZero(state.secondOperand) -> {
-                        val number = -state.secondOperand.toBigDecimal()
-                        val isNegative = number < BigDecimal.valueOf(0)
-                        state =
-                            state.copy(
-                                secondOperand = getStringFromNumber(number),
-                                isSecondOperandNegative = isNegative
-                            )
+                    state.operation != null && state.secondOperand.isNotEmpty() && !isOperandZero(
+                        state.secondOperand
+                    ) -> {
+                        val (newSecondOperand, isNegative) = invertOperand(state.secondOperand)
+                        state = state.copy(
+                            secondOperand = newSecondOperand,
+                            isSecondOperandNegative = isNegative
+                        )
                     }
                 }
             }
@@ -429,24 +474,15 @@ class CalculatorMainScreenViewModel : ViewModel() {
         isChangeDigit = true
     }
 
-    private fun getStringFromNumber(number: BigDecimal): String {
-        return number
+    private fun getStringFromNumber(number: BigDecimal): String =
+        number
             .setScale(NUMBER_OF_DECIMAL_PLACES, RoundingMode.CEILING)
             .toString()
             .dropLastWhile { it == '0' }
             .dropLastWhile { it == '.' }
-    }
 
-    private fun isOperandZero(number: String): Boolean {
-
-        val num = if (number.contains('.')) {
-            number.dropLastWhile { it == '0' }.dropLastWhile { it == '.' }
-        } else {
-            number
-        }
-
-        return num == "0"
-    }
+    private fun isOperandZero(number: String): Boolean =
+        number.trimEnd('0').trimEnd('.').run { this == "0" || this == ""}
 
     companion object {
         private const val MAX_LENGTH_DIGIT = 12

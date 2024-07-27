@@ -26,7 +26,10 @@ fun getExpressionWithSpaces(state: CalculatorState): String {
                 expressionSB.append(addOperation(state.operationInBrackets))
 
                 expressionSB.append(
-                    getOperand(state.isSecondOperandInBracketsNegative, state.secondOperandInBrackets)
+                    getOperand(
+                        state.isSecondOperandInBracketsNegative,
+                        state.secondOperandInBrackets
+                    )
                 )
             }
 
@@ -63,35 +66,26 @@ private fun addOperation(operation: CalculatorOperation): String =
     }
 
 private fun addSpaces(number: String): String {
-    val isNumberNegative = number.contains('-')
+
+    val isNumberNegative = number.startsWith('-')
     val minus = if (isNumberNegative) "−" else ""
-    val startIndex =  if(isNumberNegative) 1 else 0
-    var inputNumber: String
-    val outputNumber = StringBuilder()
+    val startIndex = if (isNumberNegative) 1 else 0
+
+    val partsOfNumber = number.substring(startIndex).split(".")
+    val integerPart = partsOfNumber[0]
+    val decimalPart = if (partsOfNumber.size > 1) "." + partsOfNumber[1] else ""
+
+    val outputNumber = StringBuilder(minus)
     val integerNum = StringBuilder()
-    var decimalNumber = ""
 
-    val pointIndex = number.indexOf('.')
-    if (pointIndex != -1) {
-        inputNumber = number.substring(startIndex, pointIndex)
-        decimalNumber = number.substring(pointIndex, number.length)
-    }else{
-        inputNumber = number.substring(startIndex,number.length)
-    }
-
-    var counter = 0
-    for (digit in inputNumber.reversed()) {
-        counter++
-        if (counter == 4) {
+    for (i in integerPart.indices.reversed()) {
+        if (i != integerPart.length - 1 && (integerPart.length - i - 1) % 3 == 0) {
             integerNum.append(" ")
-            integerNum.append(digit)
-            counter = 1
-        } else {
-            integerNum.append(digit)
         }
+        integerNum.append(integerPart[i])
     }
 
-    outputNumber.append(minus).append(integerNum.toString().reversed()).append(decimalNumber)
+    outputNumber.append(integerNum.toString().reversed()).append(decimalPart)
 
     return outputNumber.toString()
 }
