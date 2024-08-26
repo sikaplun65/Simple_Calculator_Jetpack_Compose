@@ -12,11 +12,21 @@ fun getExpressionWithSpaces(state: CalculatorState): String {
 
         if (state.isInBrackets) {
             expressionSB.append("(")
-            expressionSB.append(getOperand(state.isFirstOperandInBracketsNegative, state.firstOperandInBrackets))
+            expressionSB.append(
+                getOperand(
+                    state.isFirstOperandInBracketsNegative,
+                    state.firstOperandInBrackets
+                )
+            )
 
             state.operationInBrackets?.let { operationInBrackets ->
                 expressionSB.append(addOperation(operationInBrackets))
-                expressionSB.append(getOperand(state.isSecondOperandInBracketsNegative, state.secondOperandInBrackets))
+                expressionSB.append(
+                    getOperand(
+                        state.isSecondOperandInBracketsNegative,
+                        state.secondOperandInBrackets
+                    )
+                )
             }
             expressionSB.append(")")
         }
@@ -46,7 +56,6 @@ private fun addOperation(operation: CalculatorOperation): String =
     }
 
 private fun addSpaces(number: String): String {
-
     val isNumberNegative = number.startsWith('-')
     val minus = if (isNumberNegative) "−" else ""
     val startIndex = if (isNumberNegative) 1 else 0
@@ -58,7 +67,7 @@ private fun addSpaces(number: String): String {
     val outputNumber = StringBuilder()
 
     for (i in integerPart.indices.reversed()) {
-        if (i != integerPart.length - 1 && (integerPart.length - i - 1) % 3 == 0) {
+        if (i != integerPart.lastIndex && (integerPart.lastIndex - i) % 3 == 0) {
             outputNumber.append(" ")
         }
         outputNumber.append(integerPart[i])

@@ -274,10 +274,17 @@ fun CalculatorLandscapeScreen(
                     symbol = "=",
                     modifier = ButtonModifiers.operationButtonModifier
                         .weight(weight = 1f)
-                        .background(Brush.verticalGradient(colors = listOf(Orange, darkOrange))),
-                    onClick = {
-                        onEvent(CalculatorEvent.Calculate)
-                    }
+                        .background(Brush.verticalGradient(colors = listOf(Orange, darkOrange)))
+                        .pointerInput(Unit){
+                            detectTapGestures (
+                                onTap = { onEvent(CalculatorEvent.Calculate) },
+                                onLongPress = {
+                                    onEvent(CalculatorEvent.Brackets)
+                                    onEvent(CalculatorEvent.Calculate)
+                                }
+                            )
+                        },
+                    onClick = {/*onEvent(CalculatorEvent.Calculate)*/ }
                 )
             }
         }

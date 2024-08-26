@@ -134,6 +134,7 @@ class CalculatorMainScreenViewModel : ViewModel() {
     private fun enterOperation(operation: CalculatorOperation) {
         if (state.isErrorCalculate) return
         calculate()
+        if (state.isErrorCalculate) return //to prevent replacement of an operation in case of an error
         when {
             state.isInBrackets -> {
                 if (state.firstOperandInBrackets.isEmpty() || state.firstOperandInBrackets == "0.") return
