@@ -92,7 +92,7 @@ fun CalculatorPortraitScreen(
                     modifier = equalsButtonModifier
                         .weight(1f),
                     onClick = {
-                        onEvent(CalculatorEvent.PercentCalculation)
+                        onEvent(CalculatorEvent.AddPercentageIcon)
                     }
                 )
 
@@ -268,26 +268,19 @@ fun CalculatorPortraitScreen(
                         onEvent(CalculatorEvent.NumberInversion)
                     }
                 )
-                val isBrackets = state.isInBrackets
                 CalculatorButton(
                     symbol = "=",
                     modifier = operationButtonModifier
                         .weight(weight = 1f)
                         .background(Brush.verticalGradient(colors = listOf(LightOrange, darkOrange)))
                         .pointerInput(Unit){
-                            if (!isBrackets){
-                                detectTapGestures (
-                                    onTap = { onEvent(CalculatorEvent.Calculate) },
-                                    onLongPress = {
-                                        onEvent(CalculatorEvent.Brackets)
-                                        onEvent(CalculatorEvent.Calculate)
-                                    }
-                                )
-                            }else{
-                                detectTapGestures (
-                                    onTap = { onEvent(CalculatorEvent.Calculate) },
-                                )
-                            }
+                            detectTapGestures (
+                                onTap = { onEvent(CalculatorEvent.Calculate) },
+                                onLongPress = {
+                                    onEvent(CalculatorEvent.Brackets)
+                                    onEvent(CalculatorEvent.Calculate)
+                                }
+                            )
                         },
                     onClick = {/*onEvent(CalculatorEvent.Calculate)*/ }
                 )

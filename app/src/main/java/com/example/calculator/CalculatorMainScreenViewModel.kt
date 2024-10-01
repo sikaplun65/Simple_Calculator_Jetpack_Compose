@@ -24,7 +24,7 @@ class CalculatorMainScreenViewModel : ViewModel() {
             CalculatorEvent.Decimal -> enterDecimal()
             CalculatorEvent.Delete -> performDeletion()
             CalculatorEvent.NumberInversion -> inversionPositiveDigitToNegativeDigitAndViceVersa()
-            CalculatorEvent.PercentCalculation -> performPercentCalculation()
+            CalculatorEvent.AddPercentageIcon -> state = state.copy(isPercentage = true)/*performPercentCalculation()*/
             CalculatorEvent.Brackets -> enterBrackets()
         }
     }
@@ -64,6 +64,10 @@ class CalculatorMainScreenViewModel : ViewModel() {
     }
 
     private fun getOperandsAndOperation(): Triple<BigDecimal, BigDecimal, CalculatorOperation>? {
+        if (state.isPercentage) {
+            performPercentCalculation()
+        }
+
         val (firstOp, secondOp, op) =
             if (state.isInBrackets) {
                 if (state.firstOperandInBrackets.isEmpty() || state.secondOperandInBrackets.isEmpty()) return null
@@ -227,6 +231,10 @@ class CalculatorMainScreenViewModel : ViewModel() {
 
     private fun performDeletion() {
         if (!isChangeDigit || state.isErrorCalculate) return
+        if (state.isPercentage) {
+            state = state.copy(isPercentage = false)
+            return
+        }
 
         val isInBrackets = state.isInBrackets
         val currentOperands = if (isInBrackets) {
@@ -346,6 +354,7 @@ class CalculatorMainScreenViewModel : ViewModel() {
                 )
             }
         }
+        state = state.copy(isPercentage = false)
     }
 
     private fun updateFirstOperandInPercentCalculation(

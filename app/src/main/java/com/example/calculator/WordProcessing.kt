@@ -6,9 +6,16 @@ fun getExpressionWithSpaces(state: CalculatorState): String {
 
     expressionSB.append(addSpaces(state.firstOperand))
 
+    if (state.firstOperand.isNotEmpty() && state.operation == null && state.isPercentage) {
+       expressionSB.append("%")
+    }
+
     state.operation?.let { operation ->
         expressionSB.append(addOperation(operation))
         expressionSB.append(getOperand(state.isSecondOperandNegative, state.secondOperand))
+        if (state.secondOperand.isNotEmpty() && state.isPercentage) {
+            expressionSB.append("%")
+        }
 
         if (state.isInBrackets) {
             expressionSB.append("(")
@@ -19,6 +26,10 @@ fun getExpressionWithSpaces(state: CalculatorState): String {
                 )
             )
 
+            if (state.firstOperandInBrackets.isNotEmpty() && state.operationInBrackets == null && state.isPercentage) {
+                expressionSB.append("%")
+            }
+
             state.operationInBrackets?.let { operationInBrackets ->
                 expressionSB.append(addOperation(operationInBrackets))
                 expressionSB.append(
@@ -27,6 +38,9 @@ fun getExpressionWithSpaces(state: CalculatorState): String {
                         state.secondOperandInBrackets
                     )
                 )
+            }
+            if (state.secondOperandInBrackets.isNotEmpty() && state.isPercentage) {
+                expressionSB.append("%")
             }
             expressionSB.append(")")
         }

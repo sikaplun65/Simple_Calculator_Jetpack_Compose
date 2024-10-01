@@ -220,7 +220,7 @@ fun CalculatorLandscapeScreen(
                     modifier = ButtonModifiers.equalsButtonModifier
                         .weight(1f),
                     onClick = {
-                        onEvent(CalculatorEvent.PercentCalculation)
+                        onEvent(CalculatorEvent.AddPercentageIcon)
                     }
                 )
             }

@@ -12,4 +12,5 @@ data class CalculatorState(
     val isFirstOperandInBracketsNegative: Boolean = false,
     val isSecondOperandInBracketsNegative: Boolean = false,
     val isErrorCalculate: Boolean = false,
+    val isPercentage: Boolean = false
 )
