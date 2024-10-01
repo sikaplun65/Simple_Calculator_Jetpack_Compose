@@ -24,8 +24,19 @@ class CalculatorMainScreenViewModel : ViewModel() {
             CalculatorEvent.Decimal -> enterDecimal()
             CalculatorEvent.Delete -> performDeletion()
             CalculatorEvent.NumberInversion -> inversionPositiveDigitToNegativeDigitAndViceVersa()
-            CalculatorEvent.AddPercentageIcon -> state = state.copy(isPercentage = true)/*performPercentCalculation()*/
+            CalculatorEvent.AddPercentageIcon -> addPercentage()
             CalculatorEvent.Brackets -> enterBrackets()
+        }
+    }
+
+    private fun addPercentage() {
+        val isPercentageApplicable = (state.operation == null && state.firstOperand.isNotEmpty()) ||
+                (state.secondOperand.isNotEmpty()) ||
+                (state.operationInBrackets == null && state.firstOperandInBrackets.isNotEmpty()) ||
+                (state.secondOperandInBrackets.isNotEmpty())
+
+        if (isPercentageApplicable) {
+            state = state.copy(isPercentage = true)
         }
     }
 
@@ -127,7 +138,9 @@ class CalculatorMainScreenViewModel : ViewModel() {
     ): String {
         val result = when (operation) {
             CalculatorOperation.Addition -> firstOperand.plus(secondOperand)
-            CalculatorOperation.Divide -> firstOperand.setScale(NUMBER_OF_DECIMAL_PLACES).div(secondOperand)
+            CalculatorOperation.Divide -> firstOperand.setScale(NUMBER_OF_DECIMAL_PLACES)
+                .div(secondOperand)
+
             CalculatorOperation.Multiply -> firstOperand.times(secondOperand)
             CalculatorOperation.Subtract -> firstOperand.minus(secondOperand)
         }.setScale(NUMBER_OF_DECIMAL_PLACES, RoundingMode.CEILING)
@@ -492,7 +505,7 @@ class CalculatorMainScreenViewModel : ViewModel() {
             .dropLastWhile { it == '.' }
 
     private fun isOperandZero(number: String): Boolean =
-        number.trimEnd('0').trimEnd('.').run { this == "0" || this == ""}
+        number.trimEnd('0').trimEnd('.').run { this == "0" || this == "" }
 
     companion object {
         private const val MAX_LENGTH_DIGIT = 12
